@@ -1,9 +1,13 @@
+mod lox_rs;
+
 use std::{
     env,
     fs,
     io::{self, Write},
     str
 };
+
+use lox_rs::Lexer;
 
 fn main()
 {
@@ -58,7 +62,12 @@ fn run_prompt()
     }
 }
 
-fn run(text: &str)
+fn run(code: &str)
 {
-    println!("{text}");
+    let mut lexer: Lexer = Lexer::new(code);
+    while let Some(token) = lexer.next()
+    {
+        let text = token.text;
+        println!("{text}");
+    }
 }
