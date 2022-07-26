@@ -6,7 +6,7 @@ fn main()
     {
         match line
         {
-            Ok(str) => println!("{}", str),
+            Ok(text) => println!("{}", text),
             Err(err) => println!("{}", err)
         }
     }
