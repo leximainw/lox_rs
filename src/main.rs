@@ -1,5 +1,4 @@
-use std::
-{
+use std::{
     env,
     fs,
     io::{self, Write},
