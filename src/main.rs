@@ -60,5 +60,5 @@ fn run_prompt()
 
 fn run(text: &str)
 {
-    println!("{}", text);
+    println!("{text}");
 }
