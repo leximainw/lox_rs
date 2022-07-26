@@ -1,4 +1,10 @@
-use std::{env, fs, io::{self, Write}, str};
+use std::
+{
+    env,
+    fs,
+    io::{self, Write},
+    str
+};
 
 fn main()
 {
