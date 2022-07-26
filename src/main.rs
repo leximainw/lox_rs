@@ -10,15 +10,15 @@ fn main()
     let args: Vec<String> = env::args().collect();
     if args.len() > 2
     {
-        println!("usage: {} [script]", &args[0])
+        println!("usage: {} [script]", &args[0]);
     }
     else if args.len() == 2
     {
-        run_file(&args[1])
+        run_file(&args[1]);
     }
     else
     {
-        run_prompt()
+        run_prompt();
     }
 }
 
