@@ -1,4 +1,4 @@
-use std::{env, io};
+use std::{env, fs, io, str};
 
 fn main()
 {
@@ -17,9 +17,17 @@ fn main()
     }
 }
 
-fn run_file(_file_name: &String)
+fn run_file(file_name: &String)
 {
-    println!("TODO")
+    match fs::read(file_name)
+    {
+        Ok(data) => match str::from_utf8(&data)
+        {
+            Ok(text) => run(text),
+            Err(err) => println!("Error reading file: {err}")
+        },
+        Err(err) => println!("Error reading file: {err}")
+    }
 }
 
 fn run_prompt()
@@ -28,8 +36,13 @@ fn run_prompt()
     {
         match line
         {
-            Ok(text) => println!("{}", text),
-            Err(err) => println!("{}", err)
+            Ok(text) => run(&text),
+            Err(err) => println!("Error reading stdin: {err}")
         }
     }
+}
+
+fn run(text: &str)
+{
+    println!("{}", text);
 }
