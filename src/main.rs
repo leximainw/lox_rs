@@ -24,9 +24,9 @@ fn run_file(file_name: &String)
         Ok(data) => match str::from_utf8(&data)
         {
             Ok(text) => run(text),
-            Err(err) => println!("Error reading file: {err}")
+            Err(err) => println!("Error reading {file_name}: {err}")
         },
-        Err(err) => println!("Error reading file: {err}")
+        Err(err) => println!("Error reading {file_name}: {err}")
     }
 }
 
