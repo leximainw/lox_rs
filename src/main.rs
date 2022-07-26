@@ -1,4 +1,4 @@
-use std::{env, fs, io, str};
+use std::{env, fs, io::{self, Write}, str};
 
 fn main()
 {
@@ -32,12 +32,23 @@ fn run_file(file_name: &String)
 
 fn run_prompt()
 {
-    for line in io::stdin().lines()
+    let mut lines = io::stdin().lines();
+    loop
     {
-        match line
+        print!("> ");
+        match io::stdout().flush()
         {
-            Ok(text) => run(&text),
-            Err(err) => println!("Error reading stdin: {err}")
+            Err(err) => println!("Error printing prompt: {err}"),
+            Ok(_) => {}
+        }
+        match lines.next()
+        {
+            Some(result) => match result
+            {
+                Ok(text) => run(&text),
+                Err(err) => println!("Error reading stdin: {err}")
+            },
+            None => break
         }
     }
 }
