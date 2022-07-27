@@ -38,6 +38,15 @@ impl<I: Iterator> Iterator for ConcreteNPeekable<I>
 
 impl<I: Iterator> ConcreteNPeekable<I>
 {
+    pub fn next_if(&mut self, func: impl FnOnce(&I::Item) -> bool) -> Option<I::Item>
+    {
+        match self.peek()
+        {
+            Some(item) if func(&item) => self.next(),
+            _ => None
+        }
+    }
+
     pub fn peek(&mut self) -> Option<&I::Item>
     {
         if self.cursor == self.view.len()
