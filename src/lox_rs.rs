@@ -7,8 +7,9 @@ pub use self::npeekable::NPeekableExt as NPeekableExt;
 #[derive(Debug)]   // TODO: remove Debug when not printing TokenType values
 pub enum LoxValue
 {
-    Str(String),
+    Bool(bool),
     Num(f64),
+    Str(String),
     Nil
 }
 
@@ -36,11 +37,11 @@ pub enum TokenType
     Less, LessEqual,
 
     // literals
-    Identifier, String, Number,
+    Identifier, Bool, Number, String,
 
     // keywords
-    And, Class, Else, False, Fn, For, If, Nil,
-    Or, Return, Super, This, True, Var, While,
+    And, Class, Else, Fn, For, If, Nil,
+    Or, Return, Super, This, Var, While,
     Print,   // TODO: remove once functions once
 
     // sentinels

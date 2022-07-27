@@ -174,7 +174,12 @@ impl Lexer<'_>
                 else { (TokenType::Error, LoxValue::Nil) }
             },
             TokenType::Number => (kind, LoxValue::Num(self.number(char))),
-            TokenType::Identifier => (self.identifier(char), LoxValue::Nil),
+            TokenType::Identifier => match self.identifier(char)
+            {
+                TokenType::Bool => (TokenType::Bool, LoxValue::Bool(true)),
+                TokenType::Nil => (TokenType::Bool, LoxValue::Bool(false)),
+                kind => (kind, LoxValue::Nil)
+            },
             _ => (kind, LoxValue::Nil)
         }
     }
