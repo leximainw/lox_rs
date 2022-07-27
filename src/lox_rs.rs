@@ -5,6 +5,7 @@ pub use self::lexer::Lexer as Lexer;
 pub enum LoxValue
 {
     Str(String),
+    Num(f64),
     Nil
 }
 

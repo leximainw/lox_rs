@@ -123,6 +123,7 @@ impl Lexer<'_>
             '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
             '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
             '"' => TokenType::String,
+            '0' ..= '9' => TokenType::Number,
             '/' =>
             {
                 if self.check('/')
@@ -157,7 +158,8 @@ impl Lexer<'_>
                 if let Some(str) = self.string()
                 { (kind, LoxValue::Str(str)) }
                 else { (TokenType::Error, LoxValue::Nil) }
-            }
+            },
+            TokenType::Number => (kind, LoxValue::Num(self.number(char))),
             _ => (kind, LoxValue::Nil)
         }
     }
@@ -181,6 +183,20 @@ impl Lexer<'_>
             }
         }
         None
+    }
+
+    fn number(&mut self, char: char) -> f64
+    {
+        while let Some(char) = self.peek()
+        {
+            match char
+            {
+                '0' ..= '9' => self.advance(),
+                _ => break
+            };
+        }
+        let text = Self::split_range(self.source, self.token_start, self.index);
+        if let Ok(num) = text.parse::<f64>() { num } else { f64::NAN }
     }
 
     /// split_range: split a string at the provided start and end index.
