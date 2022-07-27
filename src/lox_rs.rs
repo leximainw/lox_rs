@@ -8,7 +8,7 @@ pub struct Token<'a>
     pub kind: TokenType
 }
 
-#[derive(Debug)]
+#[derive(Debug)]   // TODO: remove when not printing TokenType names
 pub enum TokenType
 {
     // single-character tokens

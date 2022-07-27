@@ -68,6 +68,6 @@ fn run(code: &str)
     while let Some(token) = lexer.next()
     {
         let kind = token.kind;
-        println!("{kind:?}");
+        println!("{kind:?}");   // NOTE: remove derive(Debug) from TokenType when removing this
     }
 }
