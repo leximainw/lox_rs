@@ -19,7 +19,7 @@ impl Lexer<'_>
     pub fn new(source: &str) -> Lexer
     {
         Lexer{
-            source: source,
+            source,
             iter: source.char_indices().peekable(),
             index: 0,
             token_start: 0
@@ -35,10 +35,10 @@ impl Lexer<'_>
             {
                 let (kind, value) = self.read_token(c);
                 Token{
-                    kind: kind,
+                    kind,
                     start: self.token_start,
                     text: Self::split_range(self.source, self.token_start, self.index),
-                    value: value
+                    value
                 }
             },
             None => Token{
