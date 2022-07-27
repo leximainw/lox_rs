@@ -45,4 +45,18 @@ impl<I: Iterator> ConcreteNPeekable<I>
         }
         else { None }
     }
+
+    pub fn advance_cursor(&mut self) -> bool
+    {
+        if self.cursor == self.view.len()
+        {
+            match self.iter.next()
+            {
+                Some(item) => self.view.push(item),
+                None => return false
+            }
+        }
+        self.cursor += 1;
+        true
+    }
 }
