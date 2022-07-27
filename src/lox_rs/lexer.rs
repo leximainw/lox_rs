@@ -106,9 +106,16 @@ mod lexer
             self.token_start = self.index;
             match char
             {
-                '*' => TokenType::Star,
-                '+' => TokenType::Plus,
+                '(' => TokenType::LeftParen,
+                ')' => TokenType::RightParen,
+                '{' => TokenType::LeftBrace,
+                '}' => TokenType::RightBrace,
+                ',' => TokenType::Comma,
+                '.' => TokenType::Dot,
                 '-' => TokenType::Minus,
+                '+' => TokenType::Plus,
+                ';' => TokenType::Semicolon,
+                '*' => TokenType::Star,
                 '/' =>
                 {
                     if self.check('/')
