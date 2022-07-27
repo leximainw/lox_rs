@@ -1,15 +1,15 @@
 use std::collections::VecDeque;
 
-pub trait NPeekable : Iterator + Sized
+pub trait NPeekableExt : Iterator + Sized
 {
-    fn npeekable(self) -> ConcreteNPeekable<Self>;
+    fn npeekable(self) -> NPeekable<Self>;
 }
 
-impl<I: Iterator> NPeekable for I
+impl<I: Iterator> NPeekableExt for I
 {
-    fn npeekable(self) -> ConcreteNPeekable<I>
+    fn npeekable(self) -> NPeekable<I>
     {
-        ConcreteNPeekable{
+        NPeekable{
             iter: self,
             view: VecDeque::new(),
             cursor: 0
@@ -17,14 +17,14 @@ impl<I: Iterator> NPeekable for I
     }
 }
 
-pub struct ConcreteNPeekable<I: Iterator>
+pub struct NPeekable<I: Iterator>
 {
     iter: I,
     view: VecDeque<I::Item>,
     cursor: usize
 }
 
-impl<I: Iterator> Iterator for ConcreteNPeekable<I>
+impl<I: Iterator> Iterator for NPeekable<I>
 {
     type Item = I::Item;
 
@@ -36,7 +36,7 @@ impl<I: Iterator> Iterator for ConcreteNPeekable<I>
     }
 }
 
-impl<I: Iterator> ConcreteNPeekable<I>
+impl<I: Iterator> NPeekable<I>
 {
     pub fn next_if(&mut self, func: impl FnOnce(&I::Item) -> bool) -> Option<I::Item>
     {
