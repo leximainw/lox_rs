@@ -116,6 +116,10 @@ mod lexer
                 '+' => TokenType::Plus,
                 ';' => TokenType::Semicolon,
                 '*' => TokenType::Star,
+                '!' => if self.check('=') { TokenType::BangEqual } else { TokenType::Bang },
+                '=' => if self.check('=') { TokenType::EqualEqual } else { TokenType::Equal },
+                '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
+                '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
                 '/' =>
                 {
                     if self.check('/')
