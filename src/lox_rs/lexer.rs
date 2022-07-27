@@ -81,7 +81,14 @@ mod lexer
 
         fn read_token(&mut self, char: char) -> TokenType
         {
-            todo!()
+            match char
+            {
+                '*' => TokenType::Mul,
+                '+' => TokenType::Add,
+                '-' => TokenType::Sub,
+                '/' => TokenType::Div,
+                _ => TokenType::Error
+            }
         }
 
         /// split_range: split a string at the provided start and end index.

@@ -14,5 +14,6 @@ pub enum TokenType
     Add,
     Div,
     Sub,
-    Mul
+    Mul,
+    Error
 }
