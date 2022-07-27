@@ -2,6 +2,8 @@ use std::iter::Peekable;
 use std::str::CharIndices;
 use super::{
     LoxValue,
+    NPeekable,
+    NPeekableExt,
     Token,
     TokenType
 };
@@ -9,7 +11,7 @@ use super::{
 pub struct Lexer<'a>
 {
     source: &'a str,
-    iter: Peekable<CharIndices<'a>>,
+    iter: NPeekable<CharIndices<'a>>,
     index: usize,
     token_start: usize
 }
@@ -20,7 +22,7 @@ impl Lexer<'_>
     {
         Lexer{
             source,
-            iter: source.char_indices().peekable(),
+            iter: source.char_indices().npeekable(),
             index: 0,
             token_start: 0
         }
