@@ -1,11 +1,17 @@
 mod lexer;
 pub use self::lexer::Lexer as Lexer;
 
+pub enum LoxValue
+{
+    Nil
+}
+
 pub struct Token<'a>
 {
     pub start: usize,
     pub text: &'a str,
-    pub kind: TokenType
+    pub kind: TokenType,
+    pub value: LoxValue
 }
 
 #[derive(Debug, Eq, PartialEq)]   // TODO: remove Debug when not printing TokenType names

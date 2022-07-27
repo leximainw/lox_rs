@@ -1,7 +1,10 @@
 use std::iter::Peekable;
 use std::str::CharIndices;
-use super::Token;
-use super::TokenType;
+use super::{
+    LoxValue,
+    Token,
+    TokenType
+};
 
 pub struct Lexer<'a>
 {
@@ -28,15 +31,21 @@ impl Lexer<'_>
         let char = self.advance_past_whitespace();
         match char
         {
-            Some(c) => Token{
-                kind: self.read_token(c),
-                start: self.token_start,
-                text: Self::split_range(self.source, self.token_start, self.index)
+            Some(c) =>
+            {
+                let (kind, value) = self.read_token(c);
+                Token{
+                    kind: kind,
+                    start: self.token_start,
+                    text: Self::split_range(self.source, self.token_start, self.index),
+                    value: value
+                }
             },
             None => Token{
                 kind: TokenType::EOF,
                 start: self.index,
-                text: Self::split_range(self.source, self.index, self.index)
+                text: Self::split_range(self.source, self.index, self.index),
+                value: LoxValue::Nil
             }
         }
     }
@@ -94,10 +103,10 @@ impl Lexer<'_>
         }
     }
 
-    fn read_token(&mut self, char: char) -> TokenType
+    fn read_token(&mut self, char: char) -> (TokenType, LoxValue)
     {
         self.token_start = self.index;
-        match char
+        let kind = match char
         {
             '(' => TokenType::LeftParen,
             ')' => TokenType::RightParen,
@@ -113,6 +122,7 @@ impl Lexer<'_>
             '=' => if self.check('=') { TokenType::EqualEqual } else { TokenType::Equal },
             '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
             '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
+            '"' => TokenType::String,
             '/' =>
             {
                 if self.check('/')
@@ -126,7 +136,7 @@ impl Lexer<'_>
                     }
                     match self.advance_past_whitespace()
                     {
-                        Some(c) => self.read_token(c),
+                        Some(c) => return self.read_token(c),
                         None => TokenType::EOF
                     }
                 }
@@ -139,6 +149,10 @@ impl Lexer<'_>
             {
                 TokenType::Error
             }
+        };
+        match kind
+        {
+            _ => (kind, LoxValue::Nil)
         }
     }
 
