@@ -75,6 +75,6 @@ fn run(code: &str)
         {
             break
         }
-        println!("{kind:?} (value = {value:?})");   // NOTE: remove derive(Debug) from LoxValue and TokenType when removing this
+        println!("{kind:?} (value: {value:?})");   // NOTE: remove derive(Debug) from LoxValue and TokenType when removing this
     }
 }
