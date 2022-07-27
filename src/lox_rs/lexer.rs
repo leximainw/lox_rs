@@ -103,6 +103,17 @@ impl Lexer<'_>
         }
     }
 
+    fn peek_next(&mut self) -> Option<char>
+    {
+        let char = match self.iter.peek_next()
+        {
+            Some((_, c)) => Some(*c),
+            None => None
+        };
+        self.iter.reset_cursor();
+        char
+    }
+
     fn read_token(&mut self, char: char) -> (TokenType, LoxValue)
     {
         self.token_start = self.index - 1;
