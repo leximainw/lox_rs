@@ -69,12 +69,13 @@ fn run(code: &str)
     loop
     {
         let token = lexer.next();
+        let text = token.text;
         let kind = token.kind;
         let value = token.value;
         if kind == TokenType::EOF
         {
             break
         }
-        println!("{kind:?} (value: {value:?})");   // NOTE: remove derive(Debug) from LoxValue and TokenType when removing this
+        println!("{kind:?} (value: {value:?}, text: \"{text}\")");   // NOTE: remove derive(Debug) from LoxValue and TokenType when removing this
     }
 }
