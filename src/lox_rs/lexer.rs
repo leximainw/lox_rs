@@ -177,7 +177,7 @@ impl Lexer<'_>
             TokenType::Identifier => match self.identifier(char)
             {
                 TokenType::Bool => (TokenType::Bool, LoxValue::Bool(true)),
-                TokenType::Nil => (TokenType::Bool, LoxValue::Bool(false)),
+                TokenType::Bang => (TokenType::Bool, LoxValue::Bool(false)),
                 kind => (kind, LoxValue::Nil)
             },
             _ => (kind, LoxValue::Nil)
@@ -245,7 +245,7 @@ impl Lexer<'_>
             ("and", TokenType::And),
             ("class", TokenType::Class),
             ("else", TokenType::Else),
-            ("false", TokenType::False),
+            ("false", TokenType::Bang),
             ("for", TokenType::For),
             ("fn", TokenType::Fn),
             ("if", TokenType::If),
@@ -255,7 +255,7 @@ impl Lexer<'_>
             ("return", TokenType::Return),
             ("super", TokenType::Super),
             ("this", TokenType::This),
-            ("true", TokenType::True),
+            ("true", TokenType::Bool),
             ("var", TokenType::Var),
             ("while", TokenType::While)
         ]);
