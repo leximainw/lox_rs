@@ -198,6 +198,26 @@ impl Lexer<'_>
 
     fn number(&mut self, char: char) -> f64
     {
+        self.integer();
+        if self.peek() == Some('.')
+            && (Some('0') ..= Some('9')).contains(&self.peek_next())
+        {
+            self.advance();
+            self.integer();
+        }
+        let peek = self.peek();
+        if peek == Some('E') || peek == Some('e')
+            && (Some('0') ..= Some('9')).contains(&self.peek_next())
+        {
+            self.advance();
+            self.integer();
+        }
+        let text = Self::split_range(self.source, self.token_start, self.index);
+        if let Ok(num) = text.parse::<f64>() { num } else { f64::NAN }
+    }
+
+    fn integer(&mut self)
+    {
         while let Some(char) = self.peek()
         {
             match char
@@ -206,21 +226,6 @@ impl Lexer<'_>
                 _ => break
             };
         }
-        if self.peek() == Some('.')
-            && (Some('0') ..= Some('9')).contains(&self.peek_next())
-        {
-            self.advance();
-            while let Some(char) = self.peek()
-            {
-                match char
-                {
-                    '0' ..= '9' => self.advance(),
-                    _ => break
-                };
-            }
-        }
-        let text = Self::split_range(self.source, self.token_start, self.index);
-        if let Ok(num) = text.parse::<f64>() { num } else { f64::NAN }
     }
 
     /// split_range: split a string at the provided start and end index.
