@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 pub trait NPeekable : Iterator + Sized
 {
     fn npeekable(self) -> ConcreteNPeekable<Self>;
@@ -9,7 +11,7 @@ impl<I: Iterator> NPeekable for I
     {
         ConcreteNPeekable{
             iter: self,
-            view: Vec::new(),
+            view: VecDeque::new(),
             cursor: 0
         }
     }
@@ -18,7 +20,7 @@ impl<I: Iterator> NPeekable for I
 pub struct ConcreteNPeekable<I: Iterator>
 {
     iter: I,
-    view: Vec<<I as Iterator>::Item>,
+    view: VecDeque<<I as Iterator>::Item>,
     cursor: usize
 }
 
@@ -28,7 +30,9 @@ impl<I: Iterator> Iterator for ConcreteNPeekable<I>
 
     fn next(&mut self) -> Option<I::Item>
     {
-        self.iter.next()
+        if self.view.len() != 0
+        { self.view.pop_front() }
+        else { self.iter.next() }
     }
 }
 
@@ -40,7 +44,7 @@ impl<I: Iterator> ConcreteNPeekable<I>
         {
             match self.iter.next()
             {
-                Some(item) => self.view.push(item),
+                Some(item) => self.view.push_back(item),
                 None => return None
             }
         }
@@ -53,11 +57,16 @@ impl<I: Iterator> ConcreteNPeekable<I>
         {
             match self.iter.next()
             {
-                Some(item) => self.view.push(item),
+                Some(item) => self.view.push_back(item),
                 None => return false
             }
         }
         self.cursor += 1;
         true
+    }
+
+    pub fn reset_cursor(&mut self)
+    {
+        self.cursor = 0;
     }
 }
