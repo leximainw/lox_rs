@@ -1,5 +1,7 @@
 mod lexer;
+mod npeekable;
 pub use self::lexer::Lexer as Lexer;
+pub use self::npeekable::NPeekable as NPeekable;
 
 #[derive(Debug)]   // TODO: remove Debug when not printing TokenType values
 pub enum LoxValue
