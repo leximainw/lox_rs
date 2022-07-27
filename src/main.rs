@@ -8,6 +8,7 @@ use std::{
 };
 
 use lox_rs::Lexer;
+use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
 
 fn main()
 {
@@ -65,9 +66,14 @@ fn run_prompt()
 fn run(code: &str)
 {
     let mut lexer: Lexer = Lexer::new(code);
-    while let Some(token) = lexer.next()
+    loop
     {
+        let token = lexer.next();
         let kind = token.kind;
+        if kind == TokenType::EOF
+        {
+            break
+        }
         println!("{kind:?}");   // NOTE: remove derive(Debug) from TokenType when removing this
     }
 }

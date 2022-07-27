@@ -8,7 +8,7 @@ pub struct Token<'a>
     pub kind: TokenType
 }
 
-#[derive(Debug)]   // TODO: remove when not printing TokenType names
+#[derive(Debug, Eq, PartialEq)]   // TODO: remove Debug when not printing TokenType names
 pub enum TokenType
 {
     // single-character tokens
@@ -28,5 +28,6 @@ pub enum TokenType
     And, Class, Else, False, Fn, For, If, Nil, Or,
     Print, Return, Super, This, True, Var, While,
 
-    Error
+    // sentinels
+    Error, EOF
 }

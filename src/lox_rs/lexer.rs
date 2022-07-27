@@ -14,7 +14,8 @@ mod lexer
     {
         source: &'a str,
         iter: Peekable<CharIndices<'a>>,
-        index: usize
+        index: usize,
+        token_start: usize
     }
 
     impl Lexer<'_>
@@ -24,24 +25,26 @@ mod lexer
             Lexer{
                 source: source,
                 iter: source.char_indices().peekable(),
-                index: 0
+                index: 0,
+                token_start: 0
             }
         }
 
-        pub fn next(&mut self) -> Option<Token>
+        pub fn next(&mut self) -> Token
         {
             let char = self.advance_past_whitespace();
             match char
             {
-                Some((i, c)) =>
-                {
-                    Some(Token{
-                        start: i,
-                        kind: self.read_token(c),
-                        text: Self::split_range(self.source, i, self.index)
-                    })
+                Some(c) => Token{
+                    kind: self.read_token(c),
+                    start: self.token_start,
+                    text: Self::split_range(self.source, self.token_start, self.index)
                 },
-                None => None
+                None => Token{
+                    kind: TokenType::EOF,
+                    start: self.index,
+                    text: Self::split_range(self.source, self.index, self.index)
+                }
             }
         }
 
@@ -58,7 +61,7 @@ mod lexer
             }
         }
 
-        fn advance_past_whitespace(&mut self) -> Option<(usize, char)>
+        fn advance_past_whitespace(&mut self) -> Option<char>
         {
             let mut index = self.index;
             let mut char = self.advance();
@@ -73,11 +76,7 @@ mod lexer
                 index = self.index;
                 char = self.advance();
             }
-            match char
-            {
-                Some(c) => Some((index, c)),
-                None => None
-            }
+            char
         }
 
         fn check(&mut self, char: char) -> bool
@@ -104,13 +103,38 @@ mod lexer
 
         fn read_token(&mut self, char: char) -> TokenType
         {
+            self.token_start = self.index;
             match char
             {
                 '*' => TokenType::Star,
                 '+' => TokenType::Plus,
                 '-' => TokenType::Minus,
-                '/' => TokenType::Slash,
-                _ => TokenType::Error
+                '/' =>
+                {
+                    if self.check('/')
+                    {
+                        while let Some(c) = self.advance()
+                        {
+                            if c == '\n'
+                            {
+                                break
+                            }
+                        }
+                        match self.advance_past_whitespace()
+                        {
+                            Some(c) => self.read_token(c),
+                            None => TokenType::EOF
+                        }
+                    }
+                    else
+                    {
+                        TokenType::Slash
+                    }
+                },
+                _ =>
+                {
+                    TokenType::Error
+                }
             }
         }
 
