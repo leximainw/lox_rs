@@ -237,7 +237,22 @@ impl Lexer<'_>
         // TODO: break into module constant if issue 88674 is made stable
         // https://github.com/rust-lang/rust/issues/88674
         let lexer_keywords: HashMap<&str, TokenType> = HashMap::from([
-            ("fn", TokenType::Fn)
+            ("and", TokenType::And),
+            ("class", TokenType::Class),
+            ("else", TokenType::Else),
+            ("false", TokenType::False),
+            ("for", TokenType::For),
+            ("fn", TokenType::Fn),
+            ("if", TokenType::If),
+            ("nil", TokenType::Nil),
+            ("or", TokenType::Or),
+            ("print", TokenType::Print),
+            ("return", TokenType::Return),
+            ("super", TokenType::Super),
+            ("this", TokenType::This),
+            ("true", TokenType::True),
+            ("var", TokenType::Var),
+            ("while", TokenType::While)
         ]);
 
         while let Some(char) = self.peek()
