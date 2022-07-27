@@ -106,10 +106,10 @@ mod lexer
         {
             match char
             {
-                '*' => TokenType::Mul,
-                '+' => TokenType::Add,
-                '-' => TokenType::Sub,
-                '/' => TokenType::Div,
+                '*' => TokenType::Star,
+                '+' => TokenType::Plus,
+                '-' => TokenType::Minus,
+                '/' => TokenType::Slash,
                 _ => TokenType::Error
             }
         }
