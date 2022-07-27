@@ -31,3 +31,18 @@ impl<I: Iterator> Iterator for ConcreteNPeekable<I>
         self.iter.next()
     }
 }
+
+impl<I: Iterator> ConcreteNPeekable<I>
+{
+    pub fn peek(&mut self) -> Option<&<I as Iterator>::Item>
+    {
+        if self.cursor < self.view.len()
+        { Some(&self.view[self.cursor]) }
+        else if let Some(item) = self.iter.next()
+        {
+            self.view.push(item);
+            Some(&self.view[self.cursor])
+        }
+        else { None }
+    }
+}
