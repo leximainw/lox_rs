@@ -5,6 +5,7 @@ use super::TokenType;
 
 mod lexer
 {
+    use std::iter::Peekable;
     use std::str::CharIndices;
     use super::Token;
     use super::TokenType;
@@ -12,7 +13,7 @@ mod lexer
     pub struct Lexer<'a>
     {
         source: &'a str,
-        iter: CharIndices<'a>,
+        iter: Peekable<CharIndices<'a>>,
         index: usize
     }
 
@@ -22,7 +23,7 @@ mod lexer
         {
             Lexer{
                 source: source,
-                iter: source.char_indices(),
+                iter: source.char_indices().peekable(),
                 index: 0
             }
         }
@@ -75,6 +76,28 @@ mod lexer
             match char
             {
                 Some(c) => Some((index, c)),
+                None => None
+            }
+        }
+
+        fn check(&mut self, char: char) -> bool
+        {
+            match self.peek()
+            {
+                Some(c) if c == char =>
+                {
+                    self.advance();
+                    true
+                },
+                _ => false
+            }
+        }
+
+        fn peek(&mut self) -> Option<char>
+        {
+            match self.iter.peek()
+            {
+                Some((_, c)) => Some(*c),
                 None => None
             }
         }
