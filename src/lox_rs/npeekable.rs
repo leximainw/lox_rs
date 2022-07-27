@@ -51,6 +51,12 @@ impl<I: Iterator> ConcreteNPeekable<I>
         Some(&self.view[self.cursor])
     }
 
+    pub fn peek_next(&mut self) -> Option<&<I as Iterator>::Item>
+    {
+        self.advance_cursor();
+        self.peek()
+    }
+
     pub fn advance_cursor(&mut self) -> bool
     {
         if self.cursor == self.view.len()
