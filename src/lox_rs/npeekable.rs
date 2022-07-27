@@ -20,7 +20,7 @@ impl<I: Iterator> NPeekable for I
 pub struct ConcreteNPeekable<I: Iterator>
 {
     iter: I,
-    view: VecDeque<<I as Iterator>::Item>,
+    view: VecDeque<I::Item>,
     cursor: usize
 }
 
@@ -38,7 +38,7 @@ impl<I: Iterator> Iterator for ConcreteNPeekable<I>
 
 impl<I: Iterator> ConcreteNPeekable<I>
 {
-    pub fn peek(&mut self) -> Option<&<I as Iterator>::Item>
+    pub fn peek(&mut self) -> Option<&I::Item>
     {
         if self.cursor == self.view.len()
         {
@@ -51,7 +51,7 @@ impl<I: Iterator> ConcreteNPeekable<I>
         Some(&self.view[self.cursor])
     }
 
-    pub fn peek_next(&mut self) -> Option<&<I as Iterator>::Item>
+    pub fn peek_next(&mut self) -> Option<&I::Item>
     {
         self.advance_cursor();
         self.peek()
