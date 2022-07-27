@@ -56,7 +56,7 @@ impl Lexer<'_>
         {
             Some((index, char)) =>
             {
-                self.index = index;
+                self.index = index + 1;
                 Some(char)
             },
             None => None
@@ -105,7 +105,7 @@ impl Lexer<'_>
 
     fn read_token(&mut self, char: char) -> (TokenType, LoxValue)
     {
-        self.token_start = self.index;
+        self.token_start = self.index - 1;
         let kind = match char
         {
             '(' => TokenType::LeftParen,
