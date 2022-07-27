@@ -31,7 +31,10 @@ impl<I: Iterator> Iterator for NPeekable<I>
     fn next(&mut self) -> Option<I::Item>
     {
         if self.view.len() != 0
-        { self.view.pop_front() }
+        {
+            self.cursor = 0;
+            self.view.pop_front()
+        }
         else { self.iter.next() }
     }
 }
