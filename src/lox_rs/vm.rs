@@ -1,24 +1,19 @@
-pub use self::vm::VM;
-
-mod vm
+pub struct VM
 {
-    pub struct VM
-    {
-        
-    }
     
-    impl VM
+}
+
+impl VM
+{
+    pub fn new() -> VM
     {
-        pub fn new() -> VM
-        {
-            VM{
+        VM{
 
-            }
         }
+    }
 
-        pub fn run(&mut self, code: &str)
-        {
-            println!("{code}");
-        }
+    pub fn run(&mut self, code: &str)
+    {
+        println!("{code}");
     }
 }

@@ -1,162 +1,154 @@
-pub use self::lexer::Lexer;
-
+use std::iter::Peekable;
+use std::str::CharIndices;
 use super::Token;
 use super::TokenType;
 
-mod lexer
+pub struct Lexer<'a>
 {
-    use std::iter::Peekable;
-    use std::str::CharIndices;
-    use super::Token;
-    use super::TokenType;
+    source: &'a str,
+    iter: Peekable<CharIndices<'a>>,
+    index: usize,
+    token_start: usize
+}
 
-    pub struct Lexer<'a>
+impl Lexer<'_>
+{
+    pub fn new(source: &str) -> Lexer
     {
-        source: &'a str,
-        iter: Peekable<CharIndices<'a>>,
-        index: usize,
-        token_start: usize
+        Lexer{
+            source: source,
+            iter: source.char_indices().peekable(),
+            index: 0,
+            token_start: 0
+        }
     }
 
-    impl Lexer<'_>
+    pub fn next(&mut self) -> Token
     {
-        pub fn new(source: &str) -> Lexer
+        let char = self.advance_past_whitespace();
+        match char
         {
-            Lexer{
-                source: source,
-                iter: source.char_indices().peekable(),
-                index: 0,
-                token_start: 0
+            Some(c) => Token{
+                kind: self.read_token(c),
+                start: self.token_start,
+                text: Self::split_range(self.source, self.token_start, self.index)
+            },
+            None => Token{
+                kind: TokenType::EOF,
+                start: self.index,
+                text: Self::split_range(self.source, self.index, self.index)
             }
         }
+    }
 
-        pub fn next(&mut self) -> Token
+    fn advance(&mut self) -> Option<char>
+    {
+        match self.iter.next()
         {
-            let char = self.advance_past_whitespace();
-            match char
+            Some((index, char)) =>
             {
-                Some(c) => Token{
-                    kind: self.read_token(c),
-                    start: self.token_start,
-                    text: Self::split_range(self.source, self.token_start, self.index)
-                },
-                None => Token{
-                    kind: TokenType::EOF,
-                    start: self.index,
-                    text: Self::split_range(self.source, self.index, self.index)
-                }
-            }
+                self.index = index;
+                Some(char)
+            },
+            None => None
         }
+    }
 
-        fn advance(&mut self) -> Option<char>
+    fn advance_past_whitespace(&mut self) -> Option<char>
+    {
+        let mut index = self.index;
+        let mut char = self.advance();
+        while let Some(c) = char
         {
-            match self.iter.next()
+            // TODO: if let chaining becomes stable, replace while predicate with:
+            // let Some(c) = char && c.is_whitespace()
+            if !c.is_whitespace()
             {
-                Some((index, char)) =>
+                break
+            }
+            index = self.index;
+            char = self.advance();
+        }
+        char
+    }
+
+    fn check(&mut self, char: char) -> bool
+    {
+        match self.peek()
+        {
+            Some(c) if c == char =>
+            {
+                self.advance();
+                true
+            },
+            _ => false
+        }
+    }
+
+    fn peek(&mut self) -> Option<char>
+    {
+        match self.iter.peek()
+        {
+            Some((_, c)) => Some(*c),
+            None => None
+        }
+    }
+
+    fn read_token(&mut self, char: char) -> TokenType
+    {
+        self.token_start = self.index;
+        match char
+        {
+            '(' => TokenType::LeftParen,
+            ')' => TokenType::RightParen,
+            '{' => TokenType::LeftBrace,
+            '}' => TokenType::RightBrace,
+            ',' => TokenType::Comma,
+            '.' => TokenType::Dot,
+            '-' => TokenType::Minus,
+            '+' => TokenType::Plus,
+            ';' => TokenType::Semicolon,
+            '*' => TokenType::Star,
+            '!' => if self.check('=') { TokenType::BangEqual } else { TokenType::Bang },
+            '=' => if self.check('=') { TokenType::EqualEqual } else { TokenType::Equal },
+            '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
+            '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
+            '/' =>
+            {
+                if self.check('/')
                 {
-                    self.index = index;
-                    Some(char)
-                },
-                None => None
-            }
-        }
-
-        fn advance_past_whitespace(&mut self) -> Option<char>
-        {
-            let mut index = self.index;
-            let mut char = self.advance();
-            while let Some(c) = char
-            {
-                // TODO: if let chaining becomes stable, replace while predicate with:
-                // let Some(c) = char && c.is_whitespace()
-                if !c.is_whitespace()
-                {
-                    break
-                }
-                index = self.index;
-                char = self.advance();
-            }
-            char
-        }
-
-        fn check(&mut self, char: char) -> bool
-        {
-            match self.peek()
-            {
-                Some(c) if c == char =>
-                {
-                    self.advance();
-                    true
-                },
-                _ => false
-            }
-        }
-
-        fn peek(&mut self) -> Option<char>
-        {
-            match self.iter.peek()
-            {
-                Some((_, c)) => Some(*c),
-                None => None
-            }
-        }
-
-        fn read_token(&mut self, char: char) -> TokenType
-        {
-            self.token_start = self.index;
-            match char
-            {
-                '(' => TokenType::LeftParen,
-                ')' => TokenType::RightParen,
-                '{' => TokenType::LeftBrace,
-                '}' => TokenType::RightBrace,
-                ',' => TokenType::Comma,
-                '.' => TokenType::Dot,
-                '-' => TokenType::Minus,
-                '+' => TokenType::Plus,
-                ';' => TokenType::Semicolon,
-                '*' => TokenType::Star,
-                '!' => if self.check('=') { TokenType::BangEqual } else { TokenType::Bang },
-                '=' => if self.check('=') { TokenType::EqualEqual } else { TokenType::Equal },
-                '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
-                '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
-                '/' =>
-                {
-                    if self.check('/')
+                    while let Some(c) = self.advance()
                     {
-                        while let Some(c) = self.advance()
+                        if c == '\n'
                         {
-                            if c == '\n'
-                            {
-                                break
-                            }
-                        }
-                        match self.advance_past_whitespace()
-                        {
-                            Some(c) => self.read_token(c),
-                            None => TokenType::EOF
+                            break
                         }
                     }
-                    else
+                    match self.advance_past_whitespace()
                     {
-                        TokenType::Slash
+                        Some(c) => self.read_token(c),
+                        None => TokenType::EOF
                     }
-                },
-                _ =>
-                {
-                    TokenType::Error
                 }
+                else
+                {
+                    TokenType::Slash
+                }
+            },
+            _ =>
+            {
+                TokenType::Error
             }
         }
+    }
 
-        /// split_range: split a string at the provided start and end index.
-        /// Panics if end comes before start, end is out of bounds, or start or end are not codepoint-aligned.
-        fn split_range(text: &str, start: usize, end: usize) -> &str
-        {
-            debug_assert!(start <= end);
-            let (pre, _) = text.split_at(end);
-            let (_, post) = pre.split_at(start);
-            post
-        }
+    /// split_range: split a string at the provided start and end index.
+    /// Panics if end comes before start, end is out of bounds, or start or end are not codepoint-aligned.
+    fn split_range(text: &str, start: usize, end: usize) -> &str
+    {
+        debug_assert!(start <= end);
+        let (pre, _) = text.split_at(end);
+        let (_, post) = pre.split_at(start);
+        post
     }
 }
