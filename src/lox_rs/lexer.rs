@@ -65,7 +65,6 @@ impl Lexer<'_>
 
     fn advance_past_whitespace(&mut self) -> Option<char>
     {
-        let mut index = self.index;
         let mut char = self.advance();
         while let Some(c) = char
         {
@@ -75,7 +74,6 @@ impl Lexer<'_>
             {
                 break
             }
-            index = self.index;
             char = self.advance();
         }
         char
