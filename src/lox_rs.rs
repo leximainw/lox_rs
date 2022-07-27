@@ -20,7 +20,9 @@ pub struct Token<'a>
     pub value: LoxValue
 }
 
-#[derive(Debug, Eq, PartialEq)]   // TODO: remove Debug when not printing TokenType names
+#[derive(Debug)]   // TODO: remove when not printing TokenType names
+#[derive(Clone, Copy)]
+#[derive(Eq, PartialEq)]
 pub enum TokenType
 {
     // single-character tokens

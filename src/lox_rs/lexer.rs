@@ -1,4 +1,7 @@
-use std::str::CharIndices;
+use std::{
+    collections::HashMap,
+    str::CharIndices
+};
 use super::{
     LoxValue,
     NPeekable,
@@ -134,6 +137,7 @@ impl Lexer<'_>
             '>' => if self.check('=') { TokenType::GreaterEqual } else { TokenType::Greater },
             '"' => TokenType::String,
             '0' ..= '9' => TokenType::Number,
+            'A' ..= 'Z' | 'a' ..= 'z' | '_' => TokenType::Identifier,
             '/' =>
             {
                 if self.check('/')
@@ -170,6 +174,7 @@ impl Lexer<'_>
                 else { (TokenType::Error, LoxValue::Nil) }
             },
             TokenType::Number => (kind, LoxValue::Num(self.number(char))),
+            TokenType::Identifier => (self.identifier(char), LoxValue::Nil),
             _ => (kind, LoxValue::Nil)
         }
     }
@@ -225,6 +230,30 @@ impl Lexer<'_>
                 _ => break
             };
         }
+    }
+
+    fn identifier(&mut self, char: char) -> TokenType
+    {
+        // TODO: break into module constant if issue 88674 is made stable
+        // https://github.com/rust-lang/rust/issues/88674
+        let lexer_keywords: HashMap<&str, TokenType> = HashMap::from([
+            ("fn", TokenType::Fn)
+        ]);
+
+        while let Some(char) = self.peek()
+        {
+            match char
+            {
+                'A' ..= 'Z' | 'a' ..= 'z'
+                    | '0' ..= '9' | '_' => {}
+                _ => break
+            }
+            self.advance();
+        }
+        let text = Self::split_range(self.source, self.token_start, self.index);
+        if lexer_keywords.contains_key(text)
+        { lexer_keywords[text] }
+        else { TokenType::Identifier }
     }
 
     /// split_range: split a string at the provided start and end index.
