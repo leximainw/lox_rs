@@ -67,7 +67,7 @@ fn run(code: &str)
     let mut lexer: Lexer = Lexer::new(code);
     while let Some(token) = lexer.next()
     {
-        let text = token.text;
-        println!("{text}");
+        let kind = token.kind;
+        println!("{kind:?}");
     }
 }

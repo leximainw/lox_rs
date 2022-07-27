@@ -11,7 +11,7 @@ mod vm
     {
         pub fn new() -> VM
         {
-            VM {
+            VM{
 
             }
         }

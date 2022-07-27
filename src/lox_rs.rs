@@ -8,7 +8,11 @@ pub struct Token<'a>
     pub kind: TokenType
 }
 
+#[derive(Debug)]
 pub enum TokenType
 {
-    None
+    Add,
+    Div,
+    Sub,
+    Mul
 }
