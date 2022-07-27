@@ -1,4 +1,3 @@
-use std::iter::Peekable;
 use std::str::CharIndices;
 use super::{
     LoxValue,
