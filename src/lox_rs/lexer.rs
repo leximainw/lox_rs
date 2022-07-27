@@ -206,6 +206,19 @@ impl Lexer<'_>
                 _ => break
             };
         }
+        if self.peek() == Some('.')
+            && (Some('0') ..= Some('9')).contains(&self.peek_next())
+        {
+            self.advance();
+            while let Some(char) = self.peek()
+            {
+                match char
+                {
+                    '0' ..= '9' => self.advance(),
+                    _ => break
+                };
+            }
+        }
         let text = Self::split_range(self.source, self.token_start, self.index);
         if let Ok(num) = text.parse::<f64>() { num } else { f64::NAN }
     }
