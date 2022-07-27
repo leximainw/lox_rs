@@ -246,7 +246,7 @@ impl Lexer<'_>
             ("if", TokenType::If),
             ("nil", TokenType::Nil),
             ("or", TokenType::Or),
-            ("print", TokenType::Print),
+            ("print", TokenType::Print),   // TODO: remove once functions work
             ("return", TokenType::Return),
             ("super", TokenType::Super),
             ("this", TokenType::This),

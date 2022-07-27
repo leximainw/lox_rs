@@ -39,8 +39,9 @@ pub enum TokenType
     Identifier, String, Number,
 
     // keywords
-    And, Class, Else, False, Fn, For, If, Nil, Or,
-    Print, Return, Super, This, True, Var, While,
+    And, Class, Else, False, Fn, For, If, Nil,
+    Or, Return, Super, This, True, Var, While,
+    Print,   // TODO: remove once functions once
 
     // sentinels
     Error, EOF
