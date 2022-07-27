@@ -21,3 +21,13 @@ pub struct ConcreteNPeekable<I: Iterator>
     view: Vec<<I as Iterator>::Item>,
     cursor: usize
 }
+
+impl<I: Iterator> Iterator for ConcreteNPeekable<I>
+{
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<I::Item>
+    {
+        self.iter.next()
+    }
+}
