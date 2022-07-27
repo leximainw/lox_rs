@@ -1,6 +1,11 @@
-pub trait NPeekable : Iterator
+pub trait NPeekable : Iterator + Sized
 {
-    fn npeekable(self) -> ConcreteNPeekable<Self> where Self: Sized
+    fn npeekable(self) -> ConcreteNPeekable<Self>;
+}
+
+impl<I: Iterator> NPeekable for I
+{
+    fn npeekable(self) -> ConcreteNPeekable<I>
     {
         ConcreteNPeekable{
             iter: self,
@@ -16,5 +21,3 @@ pub struct ConcreteNPeekable<I: Iterator>
     view: Vec<<I as Iterator>::Item>,
     cursor: usize
 }
-
-impl<I: Iterator> NPeekable for I {}
