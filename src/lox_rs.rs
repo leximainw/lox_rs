@@ -1,8 +1,10 @@
 mod lexer;
 pub use self::lexer::Lexer as Lexer;
 
+#[derive(Debug)]   // TODO: remove Debug when not printing TokenType values
 pub enum LoxValue
 {
+    Str(String),
     Nil
 }
 

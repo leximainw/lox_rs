@@ -152,8 +152,35 @@ impl Lexer<'_>
         };
         match kind
         {
+            TokenType::String =>
+            {
+                if let Some(str) = self.string()
+                { (kind, LoxValue::Str(str)) }
+                else { (TokenType::Error, LoxValue::Nil) }
+            }
             _ => (kind, LoxValue::Nil)
         }
+    }
+
+    fn string(&mut self) -> Option<String>
+    {
+        let mut str = String::new();
+        let mut escaped = false;
+        while let Some(char) = self.advance()
+        {
+            match char
+            {
+                c if escaped == true =>
+                {
+                    str.push(c);
+                    escaped = false;
+                },
+                '\\' => escaped = true,
+                '"' => return Some(str),
+                c => str.push(c)
+            }
+        }
+        None
     }
 
     /// split_range: split a string at the provided start and end index.
