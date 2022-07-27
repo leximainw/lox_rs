@@ -1,16 +1,20 @@
-pub struct NPeekable<I: Iterator>
+pub trait NPeekable : Iterator
+{
+    fn npeekable(self) -> ConcreteNPeekable<Self> where Self: Sized
+    {
+        ConcreteNPeekable{
+            iter: self,
+            view: Vec::new(),
+            cursor: 0
+        }
+    }
+}
+
+pub struct ConcreteNPeekable<I: Iterator>
 {
     iter: I,
     view: Vec<<I as Iterator>::Item>,
     cursor: usize
 }
 
-impl<I: Iterator> Iterator for NPeekable<I>
-{
-    type Item = I::Item;
-
-    fn next(&mut self) -> Option<<I as Iterator>::Item>
-    {
-        self.iter.next()
-    }
-}
+impl<I: Iterator> NPeekable for I {}
