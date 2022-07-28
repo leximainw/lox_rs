@@ -6,7 +6,7 @@ pub use self::lexer::Lexer as Lexer;
 pub use self::npeekable::NPeekable as NPeekable;
 pub use self::npeekable::NPeekableExt as NPeekableExt;
 
-#[derive(Debug)]   // TODO: remove Debug when not printing TokenType values
+#[derive(Debug)]   // TODO: remove Debug when not printing LoxValue values
 pub enum LoxValue
 {
     Bool(bool),
