@@ -9,6 +9,7 @@ use std::{
 
 use lox_rs::Lexer;
 use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
+use lox_rs::Parser;
 
 fn main()
 {
