@@ -45,7 +45,7 @@ pub enum TokenType
     // keywords
     And, Class, Else, False, Fn, For, If, Nil,
     Or, Return, Super, This, True, Var, While,
-    Print,   // TODO: remove once functions once
+    Print,   // TODO: remove once functions work
 
     // sentinels
     Error, EOF
