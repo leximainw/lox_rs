@@ -3,6 +3,10 @@ use std::{
     str::CharIndices
 };
 use super::{
+    errors::{
+        Errors,
+        Severity
+    },
     LoxValue,
     NPeekable,
     NPeekableExt,
@@ -15,7 +19,8 @@ pub struct Lexer<'a>
     source: &'a str,
     iter: NPeekable<CharIndices<'a>>,
     index: usize,
-    token_start: usize
+    token_start: usize,
+    errors: Errors<'a>
 }
 
 impl<'a> Iterator for Lexer<'a>
@@ -51,8 +56,14 @@ impl Lexer<'_>
             source,
             iter: source.char_indices().npeekable(),
             index: 0,
-            token_start: 0
+            token_start: 0,
+            errors: Errors::new(source)
         }
+    }
+
+    pub fn coalesce_errors(&mut self, target: &mut Errors)
+    {
+        self.errors.coalesce(target);
     }
 
     fn advance(&mut self) -> Option<char>
@@ -164,6 +175,8 @@ impl Lexer<'_>
             },
             _ =>
             {
+                self.errors.push("unexpected character",
+                    Severity::Error, self.token_start, 1);
                 TokenType::Error
             }
         };
