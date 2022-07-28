@@ -10,10 +10,17 @@ impl Visitor<String> for AstPrinter
 	{
 		let oper = match expr.oper
 		{
+			TokenType::EqualEqual => "==",
+			TokenType::BangEqual => "!=",
+			TokenType::Less => "<",
+			TokenType::LessEqual => "<=",
+			TokenType::Greater => ">",
+			TokenType::GreaterEqual => ">=",
 			TokenType::Plus => "+",
 			TokenType::Minus => "-",
 			TokenType::Star => "*",
 			TokenType::Slash => "/",
+			TokenType::Percent => "%",
 			_ => panic!()
 		};
 		format!("({oper} {} {})",
