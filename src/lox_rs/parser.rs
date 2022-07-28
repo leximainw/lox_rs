@@ -6,6 +6,8 @@ use super::{
     expr::{
         Binary,
         Expr,
+        Grouping,
+        Literal
     },
     lexer::Lexer,
     LoxValue,
@@ -64,8 +66,7 @@ impl Parser<'_>
                     TokenType::EqualEqual
                     | TokenType::BangEqual => true,
                     _ => false
-                }
-            })
+                }})
             {
                 if let Some(right) = self.comparison()
                 {
@@ -89,6 +90,60 @@ impl Parser<'_>
 
     fn comparison(&mut self) -> Option<Box<dyn Expr>>
     {
-        todo!()
+        self.primary()   // TODO: placeholder for testing
+    }
+
+    fn primary(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(token) = self.lexer.next_if(|token| {
+            match token.kind {
+                TokenType::Literal
+                | TokenType::LeftParen => true,
+                _ => false
+            }})
+        {
+            match token.kind {
+                TokenType::Literal => Some(Box::new(Literal{
+                    value: token.value
+                })),
+                TokenType::LeftParen =>
+                {
+                    if let Some(expr) = self.expression()
+                    {
+                        if let Some(rtoken) = self.lexer.next()
+                        {
+                            match rtoken.kind
+                            {
+                                TokenType::RightParen =>
+                                    Some(Box::new(Grouping{expr})),
+                                _ =>
+                                {
+                                    self.errors.push("expect rparen after expression",
+                                        Severity::Error, rtoken.start, rtoken.text.len());
+                                    None
+                                }
+                            }
+                        }
+                        else
+                        {
+                            self.errors.push("expect rparen after expression",
+                                Severity::Error, self.source.len(), 0);
+                            None
+                        }
+                    }
+                    else
+                    {
+                        self.errors.push("expect expression after lparen",
+                            Severity::Error, token.start, token.text.len());
+                        None
+                    }
+                },
+                _ => None
+            }
+        }
+        else
+        {
+            None
+        }
     }
 }
