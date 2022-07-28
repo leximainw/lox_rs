@@ -1,4 +1,4 @@
-mod expr;
+pub mod expr;
 mod lexer;
 mod npeekable;
 mod parser;
