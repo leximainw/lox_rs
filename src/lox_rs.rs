@@ -1,5 +1,7 @@
+mod expr;
 mod lexer;
 mod npeekable;
+mod parser;
 pub use self::lexer::Lexer as Lexer;
 pub use self::npeekable::NPeekable as NPeekable;
 pub use self::npeekable::NPeekableExt as NPeekableExt;
