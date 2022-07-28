@@ -171,14 +171,15 @@ impl Lexer<'_>
             TokenType::String =>
             {
                 if let Some(str) = self.string()
-                { (kind, LoxValue::Str(str)) }
+                { (TokenType::Literal, LoxValue::Str(str)) }
                 else { (TokenType::Error, LoxValue::Nil) }
             },
-            TokenType::Number => (kind, LoxValue::Num(self.number())),
+            TokenType::Number => (TokenType::Literal, LoxValue::Num(self.number())),
             TokenType::Identifier => match self.identifier(char)
             {
-                TokenType::Bool => (TokenType::Bool, LoxValue::Bool(true)),
-                TokenType::Bang => (TokenType::Bool, LoxValue::Bool(false)),
+                TokenType::True => (TokenType::Literal, LoxValue::Bool(true)),
+                TokenType::False => (TokenType::Literal, LoxValue::Bool(false)),
+                TokenType::Nil => (TokenType::Literal, LoxValue::Nil),
                 kind => (kind, LoxValue::Nil)
             },
             _ => (kind, LoxValue::Nil)
@@ -246,7 +247,7 @@ impl Lexer<'_>
             ("and", TokenType::And),
             ("class", TokenType::Class),
             ("else", TokenType::Else),
-            ("false", TokenType::Bang),
+            ("false", TokenType::False),
             ("for", TokenType::For),
             ("fn", TokenType::Fn),
             ("if", TokenType::If),
@@ -256,7 +257,7 @@ impl Lexer<'_>
             ("return", TokenType::Return),
             ("super", TokenType::Super),
             ("this", TokenType::This),
-            ("true", TokenType::Bool),
+            ("true", TokenType::True),
             ("var", TokenType::Var),
             ("while", TokenType::While)
         ]);

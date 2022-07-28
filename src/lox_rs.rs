@@ -40,11 +40,11 @@ pub enum TokenType
     Less, LessEqual,
 
     // literals
-    Identifier, Bool, Number, String,
+    Literal, Identifier, Bool, Number, String,
 
     // keywords
-    And, Class, Else, Fn, For, If, Nil,
-    Or, Return, Super, This, Var, While,
+    And, Class, Else, False, Fn, For, If, Nil,
+    Or, Return, Super, This, True, Var, While,
     Print,   // TODO: remove once functions once
 
     // sentinels
