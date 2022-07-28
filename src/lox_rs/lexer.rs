@@ -18,6 +18,31 @@ pub struct Lexer<'a>
     token_start: usize
 }
 
+impl<'a> Iterator for Lexer<'a>
+{
+    type Item = Token<'a>;
+
+    fn next(&mut self) -> Option<Token<'a>>
+    {
+        let char = self.advance_past_whitespace();
+        match char
+        {
+            Some(c) =>
+            {
+                let (kind, value) = self.read_token(c);
+                if kind == TokenType::EOF { None }
+                else { Some(Token{
+                    kind,
+                    start: self.token_start,
+                    text: Self::split_range(self.source, self.token_start, self.index),
+                    value
+                }) }
+            },
+            None => None
+        }
+    }
+}
+
 impl Lexer<'_>
 {
     pub fn new(source: &str) -> Lexer
@@ -27,30 +52,6 @@ impl Lexer<'_>
             iter: source.char_indices().npeekable(),
             index: 0,
             token_start: 0
-        }
-    }
-
-    pub fn next(&mut self) -> Token
-    {
-        let char = self.advance_past_whitespace();
-        match char
-        {
-            Some(c) =>
-            {
-                let (kind, value) = self.read_token(c);
-                Token{
-                    kind,
-                    start: self.token_start,
-                    text: Self::split_range(self.source, self.token_start, self.index),
-                    value
-                }
-            },
-            None => Token{
-                kind: TokenType::EOF,
-                start: self.index,
-                text: Self::split_range(self.source, self.index, self.index),
-                value: LoxValue::Nil
-            }
         }
     }
 
