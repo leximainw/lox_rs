@@ -1,4 +1,7 @@
-use super::TokenType;
+use super::{
+    LoxValue,
+    TokenType
+};
 
 trait Expr
 {
@@ -11,4 +14,20 @@ struct Binary
 	left: Box<dyn Expr>,
 	oper: TokenType,
 	right: Box<dyn Expr>
+}
+
+struct Grouping
+{
+	expr: Box<dyn Expr>
+}
+
+struct Literal
+{
+	value: LoxValue
+}
+
+struct Unary
+{
+	oper: TokenType,
+	expr: Box<dyn Expr>
 }
