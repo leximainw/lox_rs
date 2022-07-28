@@ -175,7 +175,7 @@ impl Lexer<'_>
                 else { (TokenType::Error, LoxValue::Nil) }
             },
             TokenType::Number => (TokenType::Literal, LoxValue::Num(self.number())),
-            TokenType::Identifier => match self.identifier(char)
+            TokenType::Identifier => match self.identifier()
             {
                 TokenType::True => (TokenType::Literal, LoxValue::Bool(true)),
                 TokenType::False => (TokenType::Literal, LoxValue::Bool(false)),
@@ -239,7 +239,7 @@ impl Lexer<'_>
         }
     }
 
-    fn identifier(&mut self, char: char) -> TokenType
+    fn identifier(&mut self) -> TokenType
     {
         // TODO: break into module constant if issue 88674 is made stable
         // https://github.com/rust-lang/rust/issues/88674

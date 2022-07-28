@@ -90,7 +90,6 @@ fn generate_ast(mut slice: &str) -> String
             }).collect::<Vec<String>>().join("")));
         visitors.iter().map(|tuple| {
             let (returns, kind) = tuple;
-            let kindl = &kind.to_lowercase();
             MAIN_VISIT.to_string()
                 .replace("TYPE", kind)
                 .replace("RETURNS", returns)

@@ -41,7 +41,7 @@ pub enum TokenType
     Less, LessEqual,
 
     // literals
-    Literal, Identifier, Bool, Number, String,
+    Literal, Identifier, Number, String,
 
     // keywords
     And, Class, Else, False, Fn, For, If, Nil,
