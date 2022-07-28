@@ -32,7 +32,8 @@ pub enum TokenType
 {
     // single-character tokens
     LeftParen, RightParen, LeftBrace, RightBrace,
-    Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
+    Comma, Dot, Minus, Percent, Plus, Semicolon,
+    Slash, Star,
 
     // double-character tokens
     Bang, BangEqual,

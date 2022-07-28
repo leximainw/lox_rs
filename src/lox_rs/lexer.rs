@@ -132,6 +132,7 @@ impl Lexer<'_>
             '+' => TokenType::Plus,
             ';' => TokenType::Semicolon,
             '*' => TokenType::Star,
+            '%' => TokenType::Percent,
             '!' => if self.check('=') { TokenType::BangEqual } else { TokenType::Bang },
             '=' => if self.check('=') { TokenType::EqualEqual } else { TokenType::Equal },
             '<' => if self.check('=') { TokenType::LessEqual } else { TokenType::Less },
