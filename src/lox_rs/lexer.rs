@@ -173,7 +173,7 @@ impl Lexer<'_>
                 { (kind, LoxValue::Str(str)) }
                 else { (TokenType::Error, LoxValue::Nil) }
             },
-            TokenType::Number => (kind, LoxValue::Num(self.number(char))),
+            TokenType::Number => (kind, LoxValue::Num(self.number())),
             TokenType::Identifier => match self.identifier(char)
             {
                 TokenType::Bool => (TokenType::Bool, LoxValue::Bool(true)),
@@ -205,7 +205,7 @@ impl Lexer<'_>
         None
     }
 
-    fn number(&mut self, char: char) -> f64
+    fn number(&mut self) -> f64
     {
         self.integer();
         if self.peek() == Some('.')
