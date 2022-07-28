@@ -3,9 +3,7 @@ use super::{
     TokenType
 };
 
-trait Expr
-{
-}
+trait Expr{}
 
 struct AstPrinter{}
 impl Visitor<()> for AstPrinter
