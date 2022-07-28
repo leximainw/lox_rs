@@ -1,4 +1,5 @@
 use super::{
+    Expr,
     Lexer,
     LoxValue,
     NPeekable,
@@ -11,6 +12,16 @@ pub struct Parser<'a>
 {
     source: &'a str,
     lexer: NPeekable<Lexer<'a>>
+}
+
+impl<'a> Iterator for Parser<'a>
+{
+    type Item = Box<dyn Expr>;
+
+    fn next(&mut self) -> Option<Box<dyn Expr>>
+    {
+        todo!();
+    }
 }
 
 impl Parser<'_>
