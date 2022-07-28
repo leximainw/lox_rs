@@ -10,6 +10,8 @@ use std::{
 use lox_rs::Lexer;
 use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
 use lox_rs::Parser;
+use lox_rs::Expr;
+use lox_rs::AstPrinter;
 
 fn main()
 {
@@ -65,6 +67,16 @@ fn run_prompt()
 }
 
 fn run(code: &str)
+{
+    let mut parser: Parser = Parser::new(code);
+    let printer: AstPrinter = AstPrinter{};
+    while let Some(expr) = parser.next()
+    {
+        println!("{}", expr.visit(&printer));
+    }
+}
+
+fn run_lexer(code: &str)
 {
     let mut lexer: Lexer = Lexer::new(code);
     while let Some(token) = lexer.next()
