@@ -10,38 +10,8 @@ use std::{
 use lox_rs::Lexer;
 use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
 
-
-use lox_rs::LoxValue;
-use lox_rs::expr::{
-    AstPrinter,
-    Expr,
-    Binary,
-    Grouping,
-    Unary,
-    Literal
-};
-
 fn main()
 {
-    let expression: Box<dyn Expr> = Box::new(Binary{
-        left: Box::new(Unary{
-            oper: TokenType::Minus,
-            expr: Box::new(Literal{
-                value: LoxValue::Num(123.0)
-            })
-        }),
-        oper: TokenType::Star,
-        right: Box::new(Grouping{
-            expr: Box::new(Literal{
-                value: LoxValue::Num(45.67)
-            })
-        })
-    });
-    let printer = AstPrinter{};
-    println!("{}", expression.visit(&printer));
-
-    return;
-
     let args: Vec<String> = env::args().collect();
     if args.len() > 2
     {
