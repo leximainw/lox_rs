@@ -1,10 +1,10 @@
-pub mod expr;
+mod expr;
 mod lexer;
 mod npeekable;
 mod parser;
 pub use self::lexer::Lexer as Lexer;
-pub use self::npeekable::NPeekable as NPeekable;
-pub use self::npeekable::NPeekableExt as NPeekableExt;
+use self::npeekable::NPeekable as NPeekable;
+use self::npeekable::NPeekableExt as NPeekableExt;
 
 #[derive(Debug)]   // TODO: remove Debug when not printing LoxValue values
 pub enum LoxValue
