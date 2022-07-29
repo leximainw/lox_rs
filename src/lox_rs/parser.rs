@@ -81,7 +81,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect expression after operator",
+                    self.errors.push("expected expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -92,7 +92,7 @@ impl Parser<'_>
         {
             if let Some(token) = self.lexer.peek()
             {
-                self.errors.push("expect expression",
+                self.errors.push("expected expression",
                     Severity::Error, token.start, token.text.len());
             }
             None
@@ -125,7 +125,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect expression after operator",
+                    self.errors.push("expected expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -159,7 +159,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect expression after operator",
+                    self.errors.push("expected expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -194,7 +194,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect expression after operator",
+                    self.errors.push("expected expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -224,7 +224,7 @@ impl Parser<'_>
             }
             else
             {
-                self.errors.push("expect expression after operator",
+                self.errors.push("expected expression after operator",
                     Severity::Error, token.start, token.text.len());
                 None
             }
@@ -270,7 +270,7 @@ impl Parser<'_>
                                     })),
                                 _ =>
                                 {
-                                    self.errors.push("expect rparen after expression",
+                                    self.errors.push("expected rparen after expression",
                                         Severity::Error, rtoken.start, rtoken.text.len());
                                     None
                                 }
@@ -278,14 +278,14 @@ impl Parser<'_>
                         }
                         else
                         {
-                            self.errors.push("expect rparen after expression",
+                            self.errors.push("expected rparen after expression",
                                 Severity::Error, self.source.len(), 0);
                             None
                         }
                     }
                     else
                     {
-                        self.errors.push("expect expression after lparen",
+                        self.errors.push("expected expression after lparen",
                             Severity::Error, token.start, token.text.len());
                         None
                     }
