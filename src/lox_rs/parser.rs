@@ -82,7 +82,7 @@ impl Parser<'_>
                 else
                 {
                     self.errors.push("expected expression after operator",
-                        Severity::Error, oper.start, oper.text.len());
+                        Severity::Error, oper.start + oper.text.len(), 0);
                     return None;
                 }
             }
@@ -126,7 +126,7 @@ impl Parser<'_>
                 else
                 {
                     self.errors.push("expected expression after operator",
-                        Severity::Error, oper.start, oper.text.len());
+                        Severity::Error, oper.start + oper.text.len(), 0);
                     return None;
                 }
             }
@@ -160,7 +160,7 @@ impl Parser<'_>
                 else
                 {
                     self.errors.push("expected expression after operator",
-                        Severity::Error, oper.start, oper.text.len());
+                        Severity::Error, oper.start + oper.text.len(), 0);
                     return None;
                 }
             }
@@ -195,7 +195,7 @@ impl Parser<'_>
                 else
                 {
                     self.errors.push("expected expression after operator",
-                        Severity::Error, oper.start, oper.text.len());
+                        Severity::Error, oper.start + oper.text.len(), 0);
                     return None;
                 }
             }
@@ -225,7 +225,7 @@ impl Parser<'_>
             else
             {
                 self.errors.push("expected expression after operator",
-                    Severity::Error, token.start, token.text.len());
+                    Severity::Error, token.start + token.text.len(), 0);
                 None
             }
         }
@@ -271,7 +271,7 @@ impl Parser<'_>
                                 _ =>
                                 {
                                     self.errors.push("expected rparen after expression",
-                                        Severity::Error, rtoken.start, rtoken.text.len());
+                                        Severity::Error, rtoken.start, 0);
                                     None
                                 }
                             }
@@ -286,7 +286,7 @@ impl Parser<'_>
                     else
                     {
                         self.errors.push("expected expression after lparen",
-                            Severity::Error, token.start, token.text.len());
+                            Severity::Error, token.start + token.text.len(), 0);
                         None
                     }
                 },
