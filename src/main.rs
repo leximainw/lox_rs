@@ -12,6 +12,7 @@ use lox_rs::Lexer;
 use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
 use lox_rs::Parser;
 use lox_rs::Expr;
+use lox_rs::AstExecutor;
 use lox_rs::AstPrinter;
 
 fn main()
@@ -72,9 +73,14 @@ fn run(code: &str)
     let mut errors: Errors = Errors::new(code);
     let mut parser: Parser = Parser::new(code);
     let printer: AstPrinter = AstPrinter{};
+    let executor: AstExecutor = AstExecutor{};
     while let Some(expr) = parser.next()
     {
-        println!("{}", expr.print(&printer));
+        match expr.run(&executor)
+        {
+            Ok(value) => println!("{value:?}"),
+            Err(err) => println!("Error: {err}")
+        }
     }
     parser.coalesce_errors(&mut errors);
     errors.print_errors();
