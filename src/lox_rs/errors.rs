@@ -19,10 +19,6 @@ impl Errors<'_>
         self.error_list.iter().for_each(|error| {
             func(self.source, &format!("{:?}", error.severity), error.message, error.start, error.length)
         });
-        // self.error_list.iter().for_each(|error| {
-        //     println!("{:?}: {}",
-        //         error.severity, error.message);
-        // });
     }
 
     pub fn push(&mut self, message: &'static str, severity: Severity, start: usize, length: usize)
