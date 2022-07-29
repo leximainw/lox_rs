@@ -21,13 +21,13 @@ impl Visitor<String> for AstPrinter
 			_ => panic!()
 		};
 		format!("({oper} {} {})",
-			expr.left.visit(self),
-			expr.right.visit(self))
+			expr.left.print(self),
+			expr.right.print(self))
 	}
 
 	fn visit_grouping(&self, expr: &Grouping) -> String
 	{
-		format!("(group {})", expr.expr.visit(self))
+		format!("(group {})", expr.expr.print(self))
 	}
 
 	fn visit_literal(&self, expr: &Literal) -> String
@@ -43,6 +43,6 @@ impl Visitor<String> for AstPrinter
 			TokenType::Minus => "-",
 			_ => panic!()
 		};
-		format!("({oper} {})", expr.expr.visit(self))
+		format!("({oper} {})", expr.expr.print(self))
 	}
 }

@@ -74,7 +74,7 @@ fn run(code: &str)
     let printer: AstPrinter = AstPrinter{};
     while let Some(expr) = parser.next()
     {
-        println!("{}", expr.visit(&printer));
+        println!("{}", expr.print(&printer));
     }
     parser.coalesce_errors(&mut errors);
     errors.print_errors();
