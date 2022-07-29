@@ -22,7 +22,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                         {
                             if let LoxValue::Str(rstr) = rval
                             {
-                                return match(expr.oper)
+                                return match expr.oper
                                 {
                                     TokenType::Less => Ok(LoxValue::Bool(lstr < rstr)),
                                     TokenType::LessEqual => Ok(LoxValue::Bool(lstr <= rstr)),
@@ -42,7 +42,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                         {
                             if let LoxValue::Num(rnum) = rval
                             {
-                                return match(expr.oper)
+                                return match expr.oper
                                 {
                                     TokenType::Less => Ok(LoxValue::Bool(lnum < rnum)),
                                     TokenType::LessEqual => Ok(LoxValue::Bool(lnum <= rnum)),
@@ -62,7 +62,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                         {
                             if let LoxValue::Num(rnum) = rval
                             {
-                                return match(expr.oper)
+                                return match expr.oper
                                 {
                                     TokenType::Minus => Ok(LoxValue::Num(lnum - rnum)),
                                     TokenType::Star => Ok(LoxValue::Num(lnum * rnum)),
