@@ -61,25 +61,22 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
                     },
                     TokenType::Plus =>
                     {
-                        let mut concat = false;
-                        if let LoxValue::Str(ref lstr) = lval
-                        { concat = true; }
-                        else if let LoxValue::Str(ref rstr) = rval
-                        { concat = true; }
-                        else if let LoxValue::Num(lnum) = lval
+                        const err: &str = "expected two numbers or two strings";
+                        match lval
                         {
-                            if let LoxValue::Num(rnum) = rval
-                            {
-                                return Ok(LoxValue::Num(lnum + rnum));
-                            }
+                            LoxValue::Num(lnum) => if let LoxValue::Num(rnum) = rval
+                            { Ok(LoxValue::Num(lnum + rnum)) }
+                            else { Err((err, (expr.right.start(), expr.right.len()))) },
+                            LoxValue::Str(lstr) => if let LoxValue::Str(rstr) = rval
+                            { Ok(LoxValue::Str(format!("{}{}", lstr, rstr))) }
+                            else { Err((err, (expr.right.start(), expr.right.len()))) },
+                            _ => Err((err, (expr.left.start(), expr.left.len())))
                         }
-                        if concat { Ok(LoxValue::Str(format!("{lval}{rval}"))) }
-                        else { Err(("expected two numbers or a string",
-                            (1234567890, 1234567890))) }
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
                     {
+                        const err: &str = "expected two numbers";
                         if let LoxValue::Num(lnum) = lval
                         {
                             if let LoxValue::Num(rnum) = rval
@@ -93,9 +90,9 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
                                     _ => panic!()
                                 };
                             }
+                            else { Err((err, (expr.right.start(), expr.right.len()))) }
                         }
-                        Err(("expected two numbers",
-                            (1234567890, 1234567890)))
+                        else { Err((err, (expr.left.start(), expr.left.len()))) }
                     },
                     _ => panic!()
                 },
