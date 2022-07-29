@@ -61,22 +61,22 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
                     },
                     TokenType::Plus =>
                     {
-                        const err: &str = "expected two numbers or two strings";
+                        const ERR: &str = "expected two numbers or two strings";
                         match lval
                         {
                             LoxValue::Num(lnum) => if let LoxValue::Num(rnum) = rval
                             { Ok(LoxValue::Num(lnum + rnum)) }
-                            else { Err((err, (expr.right.start(), expr.right.len()))) },
+                            else { Err((ERR, (expr.right.start(), expr.right.len()))) },
                             LoxValue::Str(lstr) => if let LoxValue::Str(rstr) = rval
                             { Ok(LoxValue::Str(format!("{}{}", lstr, rstr))) }
-                            else { Err((err, (expr.right.start(), expr.right.len()))) },
-                            _ => Err((err, (expr.left.start(), expr.left.len())))
+                            else { Err((ERR, (expr.right.start(), expr.right.len()))) },
+                            _ => Err((ERR, (expr.left.start(), expr.left.len())))
                         }
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
                     {
-                        const err: &str = "expected two numbers";
+                        const ERR: &str = "expected two numbers";
                         if let LoxValue::Num(lnum) = lval
                         {
                             if let LoxValue::Num(rnum) = rval
@@ -90,9 +90,9 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
                                     _ => panic!()
                                 };
                             }
-                            else { Err((err, (expr.right.start(), expr.right.len()))) }
+                            else { Err((ERR, (expr.right.start(), expr.right.len()))) }
                         }
-                        else { Err((err, (expr.left.start(), expr.left.len()))) }
+                        else { Err((ERR, (expr.left.start(), expr.left.len()))) }
                     },
                     _ => panic!()
                 },
