@@ -108,17 +108,3 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
         }
     }
 }
-
-impl AstExecutor
-{
-    fn get_value_type(value: &LoxValue) -> TokenType
-    {
-        match value
-        {
-            LoxValue::Bool(_) => TokenType::Boolean,
-            LoxValue::Num(_) => TokenType::Number,
-            LoxValue::Str(_) => TokenType::String,
-            LoxValue::Nil => TokenType::Nil
-        }
-    }
-}
