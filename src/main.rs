@@ -78,7 +78,7 @@ fn run(code: &str)
     {
         match expr.run(&executor)
         {
-            Ok(value) => println!("{value:?}"),
+            Ok(value) => println!("{value}"),
             Err(err) => println!("Error: {err}")
         }
     }

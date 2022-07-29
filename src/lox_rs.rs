@@ -57,3 +57,17 @@ pub enum TokenType
     // sentinels
     Error, EOF
 }
+
+impl std::fmt::Display for LoxValue
+{
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error>
+    {
+        match self
+        {
+            LoxValue::Bool(value) => formatter.write_str(&value.to_string()),
+            LoxValue::Num(value) => formatter.write_str(&value.to_string()),
+            LoxValue::Str(value) => formatter.write_str(&value),
+            LoxValue::Nil => formatter.write_str("nil")
+        }
+    }
+}
