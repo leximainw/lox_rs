@@ -91,8 +91,29 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
     {
         match expr.oper
         {
-            TokenType::Bang => todo!(),
-            TokenType::Minus => todo!(),
+            TokenType::Bang => match expr.expr.run(&self)
+            {
+                Ok(value) => match value
+                {
+                    LoxValue::Bool(value) => Ok(LoxValue::Bool(!value)),
+                    LoxValue::Num(value) => Ok(LoxValue::Bool(value == 0.0)),
+                    LoxValue::Str(value) => Ok(LoxValue::Bool(value.len() == 0)),
+                    LoxValue::Nil => Ok(LoxValue::Bool(true))
+                },
+                Err(err) => Err(err)
+            },
+            TokenType::Minus =>
+            {
+                match expr.expr.run(&self)
+                {
+                    Ok(value) => if let LoxValue::Num(num) = value
+                    {
+                        Ok(LoxValue::Num(-num))
+                    }
+                    else { Err("expected number".to_string()) },
+                    Err(err) => Err(err)
+                }
+            }
             _ => panic!()
         }
     }
