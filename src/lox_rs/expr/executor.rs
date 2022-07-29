@@ -49,11 +49,11 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                     TokenType::Greater => Ok(LoxValue::Bool(lnum > rnum)),
                                     TokenType::GreaterEqual => Ok(LoxValue::Bool(lnum >= rnum)),
                                     TokenType::Plus => Ok(LoxValue::Num(lnum + rnum)),
-                                    _ => Err("test".to_string())
+                                    _ => panic!()
                                 };
                             }
                         }
-                        Err("test".to_string())
+                        Err("expected two numbers or two strings".to_string())
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
@@ -68,11 +68,11 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                     TokenType::Star => Ok(LoxValue::Num(lnum * rnum)),
                                     TokenType::Slash => Ok(LoxValue::Num(lnum / rnum)),
                                     TokenType::Percent => Ok(LoxValue::Num(lnum - (lnum / rnum).floor() * rnum)),
-                                    _ => Err("test".to_string())
+                                    _ => panic!()
                                 };
                             }
                         }
-                        Err("test".to_string())
+                        Err("expected two numbers".to_string())
                     },
                     _ => panic!()
                 },
