@@ -130,6 +130,6 @@ fn run_lexer(code: &str)
         let text = token.text;
         let kind = token.kind;
         let value = token.value;
-        println!("{kind:?} (value: {value:?}, text: \"{text}\")");   // NOTE: remove derive(Debug) from LoxValue and TokenType when removing this
+        println!("{kind:?} (value: {value:?}, text: \"{text}\")");   // NOTE: remove derive(Debug) from TokenType when removing this
     }
 }
