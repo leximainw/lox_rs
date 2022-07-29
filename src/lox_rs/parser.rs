@@ -46,7 +46,7 @@ impl Parser<'_>
         }
     }
 
-    fn coalesce_errors(&mut self, target: &mut Errors)
+    pub fn coalesce_errors(&mut self, target: &mut Errors)
     {
         self.errors.coalesce(target);
         self.lexer.unwrap_mut().coalesce_errors(target);
@@ -79,14 +79,22 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect comparison after operator",
+                    self.errors.push("expect expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
             }
             Some(left)
         }
-        else { None }
+        else
+        {
+            if let Some(token) = self.lexer.peek()
+            {
+                self.errors.push("expect expression",
+                    Severity::Error, 0, 0);
+            }
+            None
+        }
     }
 
     fn comparison(&mut self) -> Option<Box<dyn Expr>>
@@ -113,7 +121,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect comparison after operator",
+                    self.errors.push("expect expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -145,7 +153,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect comparison after operator",
+                    self.errors.push("expect expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }
@@ -178,7 +186,7 @@ impl Parser<'_>
                 }
                 else
                 {
-                    self.errors.push("expect comparison after operator",
+                    self.errors.push("expect expression after operator",
                         Severity::Error, oper.start, oper.text.len());
                     return None;
                 }

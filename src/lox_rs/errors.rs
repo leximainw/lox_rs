@@ -14,6 +14,14 @@ impl Errors<'_>
         }
     }
 
+    pub fn print_errors(&self)
+    {
+        self.error_list.iter().for_each(|error| {
+            println!("{:?}: {}",
+                error.severity, error.message);
+        });
+    }
+
     pub fn push(&mut self, message: &'static str, severity: Severity, start: usize, length: usize)
     {
         self.error_list.push(Error{
@@ -35,6 +43,7 @@ pub struct Error
     length: usize
 }
 
+#[derive(Debug)]
 pub enum Severity
 {
     Critical,

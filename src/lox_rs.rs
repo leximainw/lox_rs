@@ -3,6 +3,7 @@ mod expr;
 mod lexer;
 mod npeekable;
 mod parser;
+pub use self::errors::Errors as Errors;
 pub use self::lexer::Lexer as Lexer;
 pub use self::parser::Parser as Parser;
 pub use self::expr::AstPrinter as AstPrinter;

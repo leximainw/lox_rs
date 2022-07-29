@@ -7,6 +7,7 @@ use std::{
     str
 };
 
+use lox_rs::Errors;
 use lox_rs::Lexer;
 use lox_rs::TokenType;   // TODO: remove when not printing TokenTypes
 use lox_rs::Parser;
@@ -68,12 +69,15 @@ fn run_prompt()
 
 fn run(code: &str)
 {
+    let mut errors: Errors = Errors::new(code);
     let mut parser: Parser = Parser::new(code);
     let printer: AstPrinter = AstPrinter{};
     while let Some(expr) = parser.next()
     {
         println!("{}", expr.visit(&printer));
     }
+    parser.coalesce_errors(&mut errors);
+    errors.print_errors();
 }
 
 fn run_lexer(code: &str)
