@@ -55,10 +55,25 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                         }
                         Err("test".to_string())
                     },
-                    TokenType::Minus => todo!(),
-                    TokenType::Star => todo!(),
-                    TokenType::Slash => todo!(),
-                    TokenType::Percent => todo!(),
+                    TokenType::Minus | TokenType::Star
+                    | TokenType::Slash | TokenType::Percent =>
+                    {
+                        if let LoxValue::Num(lnum) = lval
+                        {
+                            if let LoxValue::Num(rnum) = rval
+                            {
+                                return match(expr.oper)
+                                {
+                                    TokenType::Minus => Ok(LoxValue::Num(lnum - rnum)),
+                                    TokenType::Star => Ok(LoxValue::Num(lnum * rnum)),
+                                    TokenType::Slash => Ok(LoxValue::Num(lnum / rnum)),
+                                    TokenType::Percent => Ok(LoxValue::Num(lnum - (lnum / rnum).floor() * rnum)),
+                                    _ => Err("test".to_string())
+                                };
+                            }
+                        }
+                        Err("test".to_string())
+                    },
                     _ => panic!()
                 },
                 Err(err) => Err(err)
