@@ -10,7 +10,7 @@ pub use self::expr::Expr as Expr;
 use self::npeekable::NPeekable as NPeekable;
 use self::npeekable::NPeekableExt as NPeekableExt;
 
-#[derive(Debug)]   // TODO: remove Debug when not printing LoxValue values
+#[derive(Debug)]
 #[derive(PartialEq)]
 pub enum LoxValue
 {
