@@ -104,32 +104,34 @@ fn print_error(code: &str, sev: &str, msg: &str, start: usize, len: usize)
     let mut index = 0;
     let mut line = 1;
     let mut line_start = 0;
-    let mut line_end = 0;
+    let mut line_next = 0;
     loop
     {
         if let Some(needle) = code[index..]
             .find('\n').map(|i| i + index)
         {
             if index > start { break }
-            line_start = line_end;
-            line_end = needle;
+            line_start = line_next;
+            line_next = needle + 1;
+            index = line_next;
             line += 1;
         }
         else
         {
-            line_end = code.len();
+            line_start = line_next;
+            line_next = code.len() + 1;
             break;
         }
     }
     println!("{sev}: {msg}");
     let line_prefix = format!("line {line}: ");
-    println!("{line_prefix}{}", &code[line_start .. line_end]);
+    println!("{line_prefix}{}", &code[line_start .. line_next - 1]);
     if len != 0
     {
         println!("{}{}", format!("{:>1$}", "here --", start + line_prefix.len()),
             format!("{:^<1$}", "", len));
     }
-    else if start < (line_start + line_end) / 2
+    else if start < (line_start + line_next - 1) / 2
     {
         println!("{}\\__ here", format!("{:>1$}", "", start + line_prefix.len()));
     }
