@@ -90,6 +90,40 @@ impl Parser<'_>
 
     fn comparison(&mut self) -> Option<Box<dyn Expr>>
     {
+        if let Some(mut left) = self.term()
+        {
+            while let Some(oper) = self.lexer.next_if(|token| {
+                match token.kind
+                {
+                    TokenType::Less
+                    | TokenType::LessEqual
+                    | TokenType::Greater
+                    | TokenType::GreaterEqual => true,
+                    _ => false
+                }})
+            {
+                if let Some(right) = self.term()
+                {
+                    left = Box::new(Binary{
+                        left,
+                        oper: oper.kind,
+                        right
+                    })
+                }
+                else
+                {
+                    self.errors.push("expect comparison after operator",
+                        Severity::Error, oper.start, oper.text.len());
+                    return None;
+                }
+            }
+            Some(left)
+        }
+        else { None }
+    }
+
+    fn term(&mut self) -> Option<Box<dyn Expr>>
+    {
         self.primary()   // TODO: placeholder for testing
     }
 
