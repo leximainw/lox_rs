@@ -7,7 +7,8 @@ use super::{
         Binary,
         Expr,
         Grouping,
-        Literal
+        Literal,
+        Unary
     },
     lexer::Lexer,
     LoxValue,
@@ -124,7 +125,93 @@ impl Parser<'_>
 
     fn term(&mut self) -> Option<Box<dyn Expr>>
     {
-        self.primary()   // TODO: placeholder for testing
+        if let Some(mut left) = self.factor()
+        {
+            while let Some(oper) = self.lexer.next_if(|token| {
+                match token.kind
+                {
+                    TokenType::Plus
+                    | TokenType::Minus => true,
+                    _ => false
+                }})
+            {
+                if let Some(right) = self.factor()
+                {
+                    left = Box::new(Binary{
+                        left,
+                        oper: oper.kind,
+                        right
+                    })
+                }
+                else
+                {
+                    self.errors.push("expect comparison after operator",
+                        Severity::Error, oper.start, oper.text.len());
+                    return None;
+                }
+            }
+            Some(left)
+        }
+        else { None }
+    }
+
+    fn factor(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(mut left) = self.unary()
+        {
+            while let Some(oper) = self.lexer.next_if(|token| {
+                match token.kind
+                {
+                    TokenType::Star
+                    | TokenType::Slash
+                    | TokenType::Percent => true,
+                    _ => false
+                }})
+            {
+                if let Some(right) = self.unary()
+                {
+                    left = Box::new(Binary{
+                        left,
+                        oper: oper.kind,
+                        right
+                    })
+                }
+                else
+                {
+                    self.errors.push("expect comparison after operator",
+                        Severity::Error, oper.start, oper.text.len());
+                    return None;
+                }
+            }
+            Some(left)
+        }
+        else { None }
+    }
+
+    fn unary(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(token) = self.lexer.next_if(|token| {
+            match token.kind {
+                TokenType::Bang
+                | TokenType::Minus => true,
+                _ => false
+            }})
+        {
+            if let Some(expr) = self.unary()
+            {
+                Some(Box::new(Unary{
+                    oper: token.kind,
+                    expr
+                }))
+            }
+            else
+            {
+                self.errors.push("expect expression after operator",
+                    Severity::Error, token.start, token.text.len());
+                None
+            }
+        }
+        else { self.primary() }
     }
 
     fn primary(&mut self) -> Option<Box<dyn Expr>>
@@ -132,6 +219,7 @@ impl Parser<'_>
         if let Some(token) = self.lexer.next_if(|token| {
             match token.kind {
                 TokenType::Literal
+                | TokenType::Identifier
                 | TokenType::LeftParen => true,
                 _ => false
             }})
@@ -140,6 +228,12 @@ impl Parser<'_>
                 TokenType::Literal => Some(Box::new(Literal{
                     value: token.value
                 })),
+                TokenType::Identifier =>
+                {
+                    self.errors.push("identifiers not yet implemented",
+                        Severity::Error, token.start, token.text.len());
+                    None
+                },
                 TokenType::LeftParen =>
                 {
                     if let Some(expr) = self.expression()
