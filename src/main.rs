@@ -79,47 +79,12 @@ fn run(code: &str)
             {
                 let (msg, pos) = err;
                 let (start, len) = pos;
-                let mut index = 0;
-                let mut line = 1;
-                let mut line_start = 0;
-                let mut line_end = 0;
-                loop
-                {
-                    if let Some(needle) = code[index..]
-                        .find('\n').map(|i| i + index)
-                    {
-                        if index > start { break }
-                        line_start = line_end;
-                        line_end = needle;
-                        line += 1;
-                    }
-                    else
-                    {
-                        line_end = code.len();
-                        break;
-                    }
-                }
-                println!("Error: {msg}");
-                let line_prefix = format!("line {line}: ");
-                println!("{line_prefix}{}", &code[line_start .. line_end]);
-                if len != 0
-                {
-                    println!("{}{}", format!("{:>1$}", "here --", start + line_prefix.len()),
-                        format!("{:^<1$}", "", len));
-                }
-                else if start < (line_start + line_end) / 2
-                {
-                    println!("{}\\__ here", format!("{:>1$}", "", start + line_prefix.len()));
-                }
-                else
-                {
-                    println!("{}", format!("{:>1$}", "here __/", start + line_prefix.len()));
-                }
+                print_error(code, "Runtime", msg, start, len);
             }
         }
     }
     parser.coalesce_errors(&mut errors);
-    errors.print_errors();
+    errors.print_errors(Box::new(|code, msg, sev, start, len| print_error(code, msg, sev, start, len)));
 }
 
 fn run_lexer(code: &str)
@@ -131,5 +96,45 @@ fn run_lexer(code: &str)
         let kind = token.kind;
         let value = token.value;
         println!("{kind:?} (value: {value:?}, text: \"{text}\")");   // NOTE: remove derive(Debug) from TokenType when removing this
+    }
+}
+
+fn print_error(code: &str, sev: &str, msg: &str, start: usize, len: usize)
+{
+    let mut index = 0;
+    let mut line = 1;
+    let mut line_start = 0;
+    let mut line_end = 0;
+    loop
+    {
+        if let Some(needle) = code[index..]
+            .find('\n').map(|i| i + index)
+        {
+            if index > start { break }
+            line_start = line_end;
+            line_end = needle;
+            line += 1;
+        }
+        else
+        {
+            line_end = code.len();
+            break;
+        }
+    }
+    println!("{sev}: {msg}");
+    let line_prefix = format!("line {line}: ");
+    println!("{line_prefix}{}", &code[line_start .. line_end]);
+    if len != 0
+    {
+        println!("{}{}", format!("{:>1$}", "here --", start + line_prefix.len()),
+            format!("{:^<1$}", "", len));
+    }
+    else if start < (line_start + line_end) / 2
+    {
+        println!("{}\\__ here", format!("{:>1$}", "", start + line_prefix.len()));
+    }
+    else
+    {
+        println!("{}", format!("{:>1$}", "here __/", start + line_prefix.len()));
     }
 }
