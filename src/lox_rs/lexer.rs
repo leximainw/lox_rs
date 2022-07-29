@@ -210,7 +210,13 @@ impl Lexer<'_>
             {
                 c if escaped == true =>
                 {
-                    str.push(c);
+                    match c
+                    {
+                        'r' => str.push('\r'),
+                        'n' => str.push('\n'),
+                        't' => str.push('\t'),
+                        _ => str.push(c)
+                    }
                     escaped = false;
                 },
                 '\\' => escaped = true,
