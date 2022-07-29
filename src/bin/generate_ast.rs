@@ -42,6 +42,7 @@ fn generate_ast(mut slice: &str) -> String
     let mut pos = 0;
     let mut visitors: Vec<(&str, &str, &str)> = Vec::new();
     let mut attrs: Vec<(&str, &str)> = Vec::new();
+    let mut type_fields: Vec<(&str, &str)> = Vec::new();
 
     let main_type = if let Some(index) = slice.find("// trait:")
     {
@@ -109,6 +110,31 @@ fn generate_ast(mut slice: &str) -> String
         else { break }
     }
 
+    // find and remember types and their fields
+    pos = 0;
+    while pos < slice.len()
+    {
+        // TODO: merge if let chaining becomes stable
+        if let Some(index) = slice[pos..]
+            .find("// type").map(|i| i + pos)
+        {
+            if let Some(post_type) = slice[index..]
+                .find(":").map(|i| i + index)
+            {
+                if let Some(end) = slice[post_type..]
+                    .find(";").map(|i| i + post_type)
+                {
+                    type_fields.push((&slice[index + 7 .. post_type].trim(),
+                        &slice[post_type + 1 .. end].trim()));
+                    pos = index + 1
+                }
+                else { break }
+            }
+            else { break }
+        }
+        else { break }
+    }
+
     text.push_str(GEN_MARKER);
 
     let mut main_methods = String::new();
@@ -133,12 +159,7 @@ fn generate_ast(mut slice: &str) -> String
     }).collect::<Vec<String>>().join("");
     if attrs.len() != 0
     {
-        main_methods.push_str(&attrs.iter().map(|tuple| {
-            let (name, kind) = tuple;
-            ATTR_DECL.to_string()
-                .replace("NAME", name)
-                .replace("TYPE", kind)
-        }).collect::<Vec<String>>().join(""));
+        main_methods.push_str(attr_decl);
         main_methods.push_str("\n");
     }
     if visitors.len() != 0
@@ -156,12 +177,6 @@ fn generate_ast(mut slice: &str) -> String
         .replace("MAIN", main_type)
         .replace("METHODS", &main_methods.trim()));
 
-    let expr_types = Vec::from([
-        ("Binary", "left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>"),
-        ("Grouping", "expr: Box<dyn Expr>"),
-        ("Literal", "value: LoxValue"),
-        ("Unary", "oper: TokenType, expr: Box<dyn Expr>")
-    ]);
     let mut visit_methods = String::new();
     if attrs.len() != 0
     {
@@ -170,7 +185,7 @@ fn generate_ast(mut slice: &str) -> String
     if visitors.len() != 0
     {
         text.push_str(&VISIT_TRAIT.to_string()
-            .replace("METHODS", &expr_types.iter().map(|tuple| {
+            .replace("METHODS", &type_fields.iter().map(|tuple| {
                 let (kind, _) = tuple;
                 let kindl = &kind.to_lowercase();
                 VISIT_METHOD.to_string()
@@ -197,7 +212,7 @@ fn generate_ast(mut slice: &str) -> String
         visit_body.push_str(&visit_methods);
         visit_body.push('\n');
     }
-    expr_types.iter().for_each(|tuple| {
+    type_fields.iter().for_each(|tuple| {
         let (kind, args) = tuple;
         let kindl = &kind.to_lowercase();
         let mut argsn = main_attrs.to_string()

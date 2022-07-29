@@ -7,7 +7,7 @@ cargo build
 ./target/debug/eof_newline ./src
 
 # run autogenerators on targets
-./target/debug/generate_ast ./src/lox_rs/expr.rs
+./target/debug/generate_ast ./src/lox_rs/expr.rs ./src/lox_rs/stmt.rs
 
 # rebuild lox_rs
 cargo build

@@ -5,7 +5,7 @@ REM make EOF newlines consistent
 ./target/debug/eof_newline ./src
 
 REM run autogenerators on targets
-./target/debug/generate_ast ./src/lox_rs/expr.rs
+./target/debug/generate_ast ./src/lox_rs/expr.rs ./src/lox_rs/stmt.rs
 
 REM rebuild lox_rs
 cargo build

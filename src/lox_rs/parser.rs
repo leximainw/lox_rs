@@ -10,6 +10,9 @@ use super::{
         Literal,
         Unary
     },
+    stmt::{
+        Stmt
+    },
     lexer::Lexer,
     LoxValue,
     NPeekable,
@@ -27,11 +30,11 @@ pub struct Parser<'a>
 
 impl<'a> Iterator for Parser<'a>
 {
-    type Item = Box<dyn Expr>;
+    type Item = Box<dyn Stmt>;
 
-    fn next(&mut self) -> Option<Box<dyn Expr>>
+    fn next(&mut self) -> Option<Box<dyn Stmt>>
     {
-        self.expression()
+        self.statement()
     }
 }
 
@@ -50,6 +53,11 @@ impl Parser<'_>
     {
         self.errors.coalesce(target);
         self.lexer.unwrap().coalesce_errors(target);
+    }
+
+    fn statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        todo!();
     }
 
     fn expression(&mut self) -> Option<Box<dyn Expr>>

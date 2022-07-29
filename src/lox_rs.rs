@@ -1,5 +1,6 @@
 pub mod errors;
 mod expr;
+mod stmt;
 mod lexer;
 mod npeekable;
 mod parser;

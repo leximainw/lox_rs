@@ -70,11 +70,11 @@ fn run(code: &str)
 {
     let mut errors: Errors = Errors::new(code);
     let mut parser: Parser = Parser::new(code);
-    while let Some(expr) = parser.next()
+    while let Some(stmt) = parser.next()
     {
-        match expr.run()
+        match stmt.run()
         {
-            Ok(value) => println!("{value}"),
+            Ok(()) => {},
             Err(err) =>
             {
                 let (msg, pos) = err;
