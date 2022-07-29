@@ -3,11 +3,11 @@ use super::*;
 pub struct AstExecutor{}
 impl Visitor<Result<LoxValue, String>> for AstExecutor
 {
-    fn visit_binary(&self, expr: &Binary) -> Result<LoxValue, String>
+    fn visit_binary(expr: &Binary) -> Result<LoxValue, String>
     {
-        match expr.left.run(self)
+        match expr.left.run()
         {
-            Ok(lval) => match expr.right.run(self)
+            Ok(lval) => match expr.right.run()
             {
                 Ok(rval) => match expr.oper
                 {
@@ -82,16 +82,16 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
         }
     }
 
-    fn visit_grouping(&self, expr: &Grouping) -> Result<LoxValue, String>
+    fn visit_grouping(expr: &Grouping) -> Result<LoxValue, String>
     {
-        expr.expr.run(&self)
+        expr.expr.run()
     }
 
-    fn visit_unary(&self, expr: &Unary) -> Result<LoxValue, String>
+    fn visit_unary(expr: &Unary) -> Result<LoxValue, String>
     {
         match expr.oper
         {
-            TokenType::Bang => match expr.expr.run(&self)
+            TokenType::Bang => match expr.expr.run()
             {
                 Ok(value) => match value
                 {
@@ -104,7 +104,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
             },
             TokenType::Minus =>
             {
-                match expr.expr.run(&self)
+                match expr.expr.run()
                 {
                     Ok(value) => if let LoxValue::Num(num) = value
                     {
@@ -118,7 +118,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
         }
     }
 
-    fn visit_literal(&self, expr: &Literal) -> Result<LoxValue, String>
+    fn visit_literal(expr: &Literal) -> Result<LoxValue, String>
     {
         match &expr.value
         {

@@ -16,16 +16,16 @@ use executor::AstExecutor;
 
 pub trait Expr
 {
-	fn print(&self, visitor: &AstPrinter) -> String;
-	fn run(&self, visitor: &AstExecutor) -> Result<LoxValue, String>;
+	fn print(&self) -> String;
+	fn run(&self) -> Result<LoxValue, String>;
 }
 
 trait Visitor<I>
 {
-	fn visit_binary(&self, expr: &Binary) -> I;
-	fn visit_grouping(&self, expr: &Grouping) -> I;
-	fn visit_literal(&self, expr: &Literal) -> I;
-	fn visit_unary(&self, expr: &Unary) -> I;
+	fn visit_binary(expr: &Binary) -> I;
+	fn visit_grouping(expr: &Grouping) -> I;
+	fn visit_literal(expr: &Literal) -> I;
+	fn visit_unary(expr: &Unary) -> I;
 }
 
 pub struct Binary
@@ -37,10 +37,10 @@ pub struct Binary
 
 impl Expr for Binary
 {
-	fn print(&self, visitor: &AstPrinter) -> String
-	{ visitor.visit_binary(self) }
-	fn run(&self, visitor: &AstExecutor) -> Result<LoxValue, String>
-	{ visitor.visit_binary(self) }
+	fn print(&self) -> String
+	{ AstPrinter::visit_binary(self) }
+	fn run(&self) -> Result<LoxValue, String>
+	{ AstExecutor::visit_binary(self) }
 }
 
 pub struct Grouping
@@ -50,10 +50,10 @@ pub struct Grouping
 
 impl Expr for Grouping
 {
-	fn print(&self, visitor: &AstPrinter) -> String
-	{ visitor.visit_grouping(self) }
-	fn run(&self, visitor: &AstExecutor) -> Result<LoxValue, String>
-	{ visitor.visit_grouping(self) }
+	fn print(&self) -> String
+	{ AstPrinter::visit_grouping(self) }
+	fn run(&self) -> Result<LoxValue, String>
+	{ AstExecutor::visit_grouping(self) }
 }
 
 pub struct Literal
@@ -63,10 +63,10 @@ pub struct Literal
 
 impl Expr for Literal
 {
-	fn print(&self, visitor: &AstPrinter) -> String
-	{ visitor.visit_literal(self) }
-	fn run(&self, visitor: &AstExecutor) -> Result<LoxValue, String>
-	{ visitor.visit_literal(self) }
+	fn print(&self) -> String
+	{ AstPrinter::visit_literal(self) }
+	fn run(&self) -> Result<LoxValue, String>
+	{ AstExecutor::visit_literal(self) }
 }
 
 pub struct Unary
@@ -77,8 +77,8 @@ pub struct Unary
 
 impl Expr for Unary
 {
-	fn print(&self, visitor: &AstPrinter) -> String
-	{ visitor.visit_unary(self) }
-	fn run(&self, visitor: &AstExecutor) -> Result<LoxValue, String>
-	{ visitor.visit_unary(self) }
+	fn print(&self) -> String
+	{ AstPrinter::visit_unary(self) }
+	fn run(&self) -> Result<LoxValue, String>
+	{ AstExecutor::visit_unary(self) }
 }

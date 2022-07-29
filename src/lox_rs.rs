@@ -7,8 +7,6 @@ pub use self::errors::Errors as Errors;
 pub use self::lexer::Lexer as Lexer;
 pub use self::parser::Parser as Parser;
 pub use self::expr::Expr as Expr;
-pub use self::expr::executor::AstExecutor as AstExecutor;
-pub use self::expr::printer::AstPrinter as AstPrinter;
 use self::npeekable::NPeekable as NPeekable;
 use self::npeekable::NPeekableExt as NPeekableExt;
 

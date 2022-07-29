@@ -3,7 +3,7 @@ use super::*;
 pub struct AstPrinter{}
 impl Visitor<String> for AstPrinter
 {
-	fn visit_binary(&self, expr: &Binary) -> String
+	fn visit_binary(expr: &Binary) -> String
 	{
 		let oper = match expr.oper
 		{
@@ -21,21 +21,21 @@ impl Visitor<String> for AstPrinter
 			_ => panic!()
 		};
 		format!("({oper} {} {})",
-			expr.left.print(self),
-			expr.right.print(self))
+			expr.left.print(),
+			expr.right.print())
 	}
 
-	fn visit_grouping(&self, expr: &Grouping) -> String
+	fn visit_grouping(expr: &Grouping) -> String
 	{
-		format!("(group {})", expr.expr.print(self))
+		format!("(group {})", expr.expr.print())
 	}
 
-	fn visit_literal(&self, expr: &Literal) -> String
+	fn visit_literal(expr: &Literal) -> String
 	{
 		format!("{:?}", expr.value)
 	}
 
-	fn visit_unary(&self, expr: &Unary) -> String
+	fn visit_unary(expr: &Unary) -> String
 	{
 		let oper = match expr.oper
 		{
@@ -43,6 +43,6 @@ impl Visitor<String> for AstPrinter
 			TokenType::Minus => "-",
 			_ => panic!()
 		};
-		format!("({oper} {})", expr.expr.print(self))
+		format!("({oper} {})", expr.expr.print())
 	}
 }
