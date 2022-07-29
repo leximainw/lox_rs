@@ -44,15 +44,15 @@ fn generate_ast(mut slice: &str) -> String
     {
         // TODO: merge if let chaining becomes stable
         if let Some(index) = slice[pos..]
-            .find("impl Visitor<").map(|i| i + pos)
+            .find("// impl Visitor<").map(|i| i + pos)
         {
             if let Some(post_type) = slice[index..]
                 .find("> for").map(|i| i + index)
             {
                 if let Some(end) = slice[post_type..]
-                    .find('{').map(|i| i + post_type)
+                    .find(';').map(|i| i + post_type)
                 {
-                    visitors.push((&slice[index + 13 .. post_type].trim(),
+                    visitors.push((&slice[index + 16 .. post_type].trim(),
                         &slice[post_type + 5 .. end].trim()));
                     pos = index + 1;
                 }
