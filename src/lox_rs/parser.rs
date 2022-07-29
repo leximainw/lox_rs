@@ -91,7 +91,7 @@ impl Parser<'_>
             if let Some(token) = self.lexer.peek()
             {
                 self.errors.push("expect expression",
-                    Severity::Error, 0, 0);
+                    Severity::Error, token.start, token.text.len());
             }
             None
         }
