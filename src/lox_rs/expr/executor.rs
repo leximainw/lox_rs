@@ -14,8 +14,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                     TokenType::EqualEqual => Ok(LoxValue::Bool(lval == rval)),
                     TokenType::BangEqual => Ok(LoxValue::Bool(lval != rval)),
                     TokenType::Less | TokenType::LessEqual
-                    | TokenType::Greater | TokenType::GreaterEqual
-                    | TokenType::Plus =>
+                    | TokenType::Greater | TokenType::GreaterEqual =>
                     {
                         // TODO: merge if let chaining becomes stable
                         if let LoxValue::Str(lstr) = lval
@@ -28,12 +27,6 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                     TokenType::LessEqual => Ok(LoxValue::Bool(lstr <= rstr)),
                                     TokenType::Greater => Ok(LoxValue::Bool(lstr > rstr)),
                                     TokenType::GreaterEqual => Ok(LoxValue::Bool(lstr >= rstr)),
-                                    TokenType::Plus =>
-                                    {
-                                        let mut cat = lstr.to_string();
-                                        cat.push_str(&rstr);
-                                        Ok(LoxValue::Str(cat))
-                                    },
                                     _ => Err("test".to_string())
                                 }
                             }
@@ -48,12 +41,28 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                     TokenType::LessEqual => Ok(LoxValue::Bool(lnum <= rnum)),
                                     TokenType::Greater => Ok(LoxValue::Bool(lnum > rnum)),
                                     TokenType::GreaterEqual => Ok(LoxValue::Bool(lnum >= rnum)),
-                                    TokenType::Plus => Ok(LoxValue::Num(lnum + rnum)),
                                     _ => panic!()
                                 };
                             }
                         }
                         Err("expected two numbers or two strings".to_string())
+                    },
+                    TokenType::Plus =>
+                    {
+                        let mut concat = false;
+                        if let LoxValue::Str(ref lstr) = lval
+                        { concat = true; }
+                        else if let LoxValue::Str(ref rstr) = rval
+                        { concat = true; }
+                        else if let LoxValue::Num(lnum) = lval
+                        {
+                            if let LoxValue::Num(rnum) = rval
+                            {
+                                return Ok(LoxValue::Num(lnum + rnum));
+                            }
+                        }
+                        if concat { Ok(LoxValue::Str(format!("{lval}{rval}"))) }
+                        else { Err("expected two numbers or a string".to_string()) }
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
