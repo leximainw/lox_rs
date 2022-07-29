@@ -49,7 +49,7 @@ impl Parser<'_>
     pub fn coalesce_errors(&mut self, target: &mut Errors)
     {
         self.errors.coalesce(target);
-        self.lexer.unwrap_mut().coalesce_errors(target);
+        self.lexer.unwrap().coalesce_errors(target);
     }
 
     fn expression(&mut self) -> Option<Box<dyn Expr>>

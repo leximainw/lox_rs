@@ -88,12 +88,7 @@ impl<I: Iterator> NPeekable<I>
         self.cursor = 0;
     }
 
-    pub fn unwrap(&self) -> &I
-    {
-        &self.iter
-    }
-
-    pub fn unwrap_mut(&mut self) -> &mut I
+    pub fn unwrap(&mut self) -> &mut I
     {
         &mut self.iter
     }
