@@ -1,9 +1,9 @@
 use super::*;
 
 pub struct AstExecutor{}
-impl Visitor<Result<LoxValue, String>> for AstExecutor
+impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
 {
-    fn visit_binary(expr: &Binary) -> Result<LoxValue, String>
+    fn visit_binary(expr: &Binary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match expr.left.run()
         {
@@ -17,9 +17,9 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                     | TokenType::Greater | TokenType::GreaterEqual =>
                     {
                         // TODO: merge if let chaining becomes stable
-                        if let LoxValue::Str(lstr) = lval
+                        if let LoxValue::Str(ref lstr) = lval
                         {
-                            if let LoxValue::Str(rstr) = rval
+                            if let LoxValue::Str(ref rstr) = rval
                             {
                                 return match expr.oper
                                 {
@@ -27,13 +27,13 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                     TokenType::LessEqual => Ok(LoxValue::Bool(lstr <= rstr)),
                                     TokenType::Greater => Ok(LoxValue::Bool(lstr > rstr)),
                                     TokenType::GreaterEqual => Ok(LoxValue::Bool(lstr >= rstr)),
-                                    _ => Err("test".to_string())
+                                    _ => panic!()
                                 }
                             }
                         }
-                        else if let LoxValue::Num(lnum) = lval
+                        else if let LoxValue::Num(ref lnum) = lval
                         {
-                            if let LoxValue::Num(rnum) = rval
+                            if let LoxValue::Num(ref rnum) = rval
                             {
                                 return match expr.oper
                                 {
@@ -45,7 +45,19 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                 };
                             }
                         }
-                        Err("expected two numbers or two strings".to_string())
+                        match lval
+                        {
+                            LoxValue::Str(_)
+                            | LoxValue::Num(_) =>
+                            {
+                                todo!()
+                            },
+                            _ =>
+                            {
+                                Err(("expected number or string",
+                                    (expr.left.start(), expr.left.len())))
+                            }
+                        }
                     },
                     TokenType::Plus =>
                     {
@@ -62,7 +74,8 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                             }
                         }
                         if concat { Ok(LoxValue::Str(format!("{lval}{rval}"))) }
-                        else { Err("expected two numbers or a string".to_string()) }
+                        else { Err(("expected two numbers or a string",
+                            (1234567890, 1234567890))) }
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
@@ -81,7 +94,8 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                                 };
                             }
                         }
-                        Err("expected two numbers".to_string())
+                        Err(("expected two numbers",
+                            (1234567890, 1234567890)))
                     },
                     _ => panic!()
                 },
@@ -91,12 +105,12 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
         }
     }
 
-    fn visit_grouping(expr: &Grouping) -> Result<LoxValue, String>
+    fn visit_grouping(expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         expr.expr.run()
     }
 
-    fn visit_unary(expr: &Unary) -> Result<LoxValue, String>
+    fn visit_unary(expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match expr.oper
         {
@@ -119,7 +133,8 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
                     {
                         Ok(LoxValue::Num(-num))
                     }
-                    else { Err("expected number".to_string()) },
+                    else { Err(("expected number",
+                        (expr.expr.start(), expr.expr.len()))) },
                     Err(err) => Err(err)
                 }
             }
@@ -127,7 +142,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
         }
     }
 
-    fn visit_literal(expr: &Literal) -> Result<LoxValue, String>
+    fn visit_literal(expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match &expr.value
         {

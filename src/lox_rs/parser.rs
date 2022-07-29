@@ -22,7 +22,7 @@ pub struct Parser<'a>
 {
     source: &'a str,
     lexer: NPeekable<Lexer<'a>>,
-    errors: Errors<'a>,
+    errors: Errors<'a>
 }
 
 impl<'a> Iterator for Parser<'a>
@@ -72,6 +72,8 @@ impl Parser<'_>
                 if let Some(right) = self.comparison()
                 {
                     left = Box::new(Binary{
+                        start: left.start(),
+                        len: right.start() - left.start() + right.len(),
                         left,
                         oper: oper.kind,
                         right
@@ -114,6 +116,8 @@ impl Parser<'_>
                 if let Some(right) = self.term()
                 {
                     left = Box::new(Binary{
+                        start: left.start(),
+                        len: right.start() - left.start() + right.len(),
                         left,
                         oper: oper.kind,
                         right
@@ -146,6 +150,8 @@ impl Parser<'_>
                 if let Some(right) = self.factor()
                 {
                     left = Box::new(Binary{
+                        start: left.start(),
+                        len: right.start() - left.start() + right.len(),
                         left,
                         oper: oper.kind,
                         right
@@ -179,6 +185,8 @@ impl Parser<'_>
                 if let Some(right) = self.unary()
                 {
                     left = Box::new(Binary{
+                        start: left.start(),
+                        len: right.start() - left.start() + right.len(),
                         left,
                         oper: oper.kind,
                         right
@@ -208,6 +216,8 @@ impl Parser<'_>
             if let Some(expr) = self.unary()
             {
                 Some(Box::new(Unary{
+                    start: token.start,
+                    len: expr.start() - token.start + expr.len(),
                     oper: token.kind,
                     expr
                 }))
@@ -234,6 +244,8 @@ impl Parser<'_>
         {
             match token.kind {
                 TokenType::Literal => Some(Box::new(Literal{
+                    start: token.start,
+                    len: token.text.len(),
                     value: token.value
                 })),
                 TokenType::Identifier =>
@@ -251,7 +263,11 @@ impl Parser<'_>
                             match rtoken.kind
                             {
                                 TokenType::RightParen =>
-                                    Some(Box::new(Grouping{expr})),
+                                    Some(Box::new(Grouping{
+                                        start: token.start,
+                                        len: rtoken.start - token.start + rtoken.text.len(),
+                                        expr
+                                    })),
                                 _ =>
                                 {
                                     self.errors.push("expect rparen after expression",

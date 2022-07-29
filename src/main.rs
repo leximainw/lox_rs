@@ -75,7 +75,13 @@ fn run(code: &str)
         match expr.run()
         {
             Ok(value) => println!("{value}"),
-            Err(err) => println!("Error: {err}")
+            Err(err) =>
+            {
+                let (msg, pos) = err;
+                let (start, len) = pos;
+                println!("Error: {msg}");
+                println!("at {start}");
+            }
         }
     }
     parser.coalesce_errors(&mut errors);
