@@ -84,7 +84,7 @@ impl Visitor<Result<LoxValue, String>> for AstExecutor
 
     fn visit_grouping(&self, expr: &Grouping) -> Result<LoxValue, String>
     {
-        expr.run(&self)
+        expr.expr.run(&self)
     }
 
     fn visit_unary(&self, expr: &Unary) -> Result<LoxValue, String>
