@@ -107,4 +107,14 @@ impl Scope
     {
         self.vars.get(name)
     }
+
+    pub fn set(&mut self, name: String, value: LoxValue) -> bool
+    {
+        if self.vars.contains_key(&name)
+        {
+            self.vars.insert(name, value);
+            true
+        }
+        else { false }
+    }
 }

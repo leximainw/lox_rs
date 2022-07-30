@@ -179,7 +179,44 @@ impl Parser<'_>
 
     fn expression(&mut self) -> Option<Box<dyn Expr>>
     {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(expr) = self.equality()
+        {
+            if let Some(equal) = self.lexer.next_if(
+                |token| token.kind == TokenType::Equal)
+            {
+                if let Some(var) = expr.as_varget()
+                {
+                    if let Some(value) = self.assignment()
+                    {
+                        Some(Box::new(VarSet{
+                            start: expr.start(),
+                            len: value.start() - expr.start() + value.len(),
+                            name: var.name.to_string(),
+                            expr: value
+                        }))
+                    }
+                    else
+                    {
+                        self.errors.push("expected value after assignment",
+                            Severity::Error, equal.start + equal.text.len(), 0);
+                        None
+                    }
+                }
+                else
+                {
+                    self.errors.push("invalid assignment target",
+                        Severity::Error, expr.start(), expr.len());
+                    None
+                }
+            }
+            else { Some(expr) }
+        }
+        else { None }
     }
 
     fn equality(&mut self) -> Option<Box<dyn Expr>>

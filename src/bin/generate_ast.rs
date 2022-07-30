@@ -30,6 +30,7 @@ fn generate_ast(mut slice: &str) -> String
     const MAIN_TRAIT: &str = "\npub trait MAIN\n{\n\tMETHODS\n}\n";
     const MAIN_ATTR: &str = "\tpub NAME: TYPE;\n";
     const ATTR_DECL: &str = "\tfn NAME(&self) -> TYPE;\n";
+    const CAST_DECL: &str = "\tfn as_TYPEL(&self) -> Option<&TYPE>;\n";
     const MAIN_VISIT: &str = "\tfn VERB(&self, VERB: &mut TYPE) -> RETURNS;\n";
     const MAIN_VISIT_BODY: &str = "\n\t{ VERB.visit_TYPEL(self) }";
     const VISIT_TRAIT: &str = "\ntrait Visitor<I>\n{\nMETHODS}\n";
@@ -42,6 +43,7 @@ fn generate_ast(mut slice: &str) -> String
     let mut pos = 0;
     let mut visitors: Vec<(&str, &str, &str)> = Vec::new();
     let mut attrs: Vec<(&str, &str)> = Vec::new();
+    let mut casts: Vec<&str> = Vec::new();
     let mut type_fields: Vec<(&str, &str)> = Vec::new();
 
     let main_type = if let Some(index) = slice.find("// trait:")
@@ -110,6 +112,25 @@ fn generate_ast(mut slice: &str) -> String
         else { break }
     }
 
+    // find and remember cast types
+    pos = 0;
+    while pos < slice.len()
+    {
+        // TODO: merge if let chaining becomes stable
+        if let Some(index) = slice[pos..]
+            .find("// cast:").map(|i| i + pos)
+        {
+            if let Some(end) = slice[index..]
+                .find(";").map(|i| i + index)
+            {
+                casts.push(&slice[index + 8 .. end].trim());
+                pos = index + 1
+            }
+            else { break }
+        }
+        else { break }
+    }
+
     // find and remember types and their fields
     pos = 0;
     while pos < slice.len()
@@ -150,16 +171,23 @@ fn generate_ast(mut slice: &str) -> String
             .replace("NAME", name)
             .replace("TYPE", kind)
     }).collect::<Vec<String>>().join("");
-    let attr_impl = &attrs.iter().map(|tuple| {
+    let mut attr_impl = attrs.iter().map(|tuple| {
         let (name, kind) = tuple;
         ATTR_DECL.to_string()
-            .replace(";", "\n\t{ self.NAME }")
+            .replace(";", " { self.NAME }")
             .replace("NAME", name)
+            .replace("TYPE", kind)
+    }).collect::<Vec<String>>().join("").to_string();
+    let cast_decl = &casts.iter().map(|kind| {
+        let kindl = &kind.to_lowercase();
+        CAST_DECL.to_string()
+            .replace("TYPEL", kindl)
             .replace("TYPE", kind)
     }).collect::<Vec<String>>().join("");
     if attrs.len() != 0
     {
         main_methods.push_str(attr_decl);
+        main_methods.push_str(cast_decl);
         main_methods.push_str("\n");
     }
     if visitors.len() != 0
@@ -178,10 +206,6 @@ fn generate_ast(mut slice: &str) -> String
         .replace("METHODS", &main_methods.trim()));
 
     let mut visit_methods = String::new();
-    if attrs.len() != 0
-    {
-        //visit_methods.push_str();
-    }
     if visitors.len() != 0
     {
         text.push_str(&VISIT_TRAIT.to_string()
@@ -202,20 +226,23 @@ fn generate_ast(mut slice: &str) -> String
                     .replace("VERB", verb)
                     .replace("VISIT", kind))
         }).collect::<Vec<String>>().join(""));
-    }
-    let mut visit_body = attr_impl.to_string();
-    if attrs.len() != 0
-    {
-        visit_body.push('\n');
-    }
-    if visitors.len() != 0
-    {
-        visit_body.push_str(&visit_methods);
-        visit_body.push('\n');
+        visit_methods.push('\n');
     }
     type_fields.iter().for_each(|tuple| {
         let (kind, args) = tuple;
         let kindl = &kind.to_lowercase();
+        let mut body = String::new();
+        body.push_str(&attr_impl);
+        body.push_str(&casts.iter().map(|cast_kind| {
+            let cast_kindl = &cast_kind.to_lowercase();
+            CAST_DECL.to_string()
+                .replace("TYPEL", cast_kindl)
+                .replace("TYPE", cast_kind)
+                .replace(";", if kind != cast_kind { " { None }" }
+                    else { " { Some(self) }" })
+        }).collect::<Vec<String>>().join(""));
+        if body.len() != 0 { body.push('\n'); }
+        body.push_str(&visit_methods);
         let mut argsn = main_attrs.to_string()
             .replace(";", ",");
         argsn.push_str("\tpub ");
@@ -227,7 +254,7 @@ fn generate_ast(mut slice: &str) -> String
             .replace("ARGS", &args));
         text.push_str(&VISIT_CODE.to_string()
             .replace("MAIN", main_type)
-            .replace("METHODS", &visit_body.trim())
+            .replace("METHODS", body.trim())
             .replace("TYPEL", kindl)
             .replace("TYPE", kind));
     });

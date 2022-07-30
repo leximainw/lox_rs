@@ -165,4 +165,27 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         else { Err(("undefined variable",
             (expr.start(), expr.len()))) }
     }
+
+    fn visit_varset(&mut self, expr: &VarSet) -> Result<LoxValue, (&'static str, (usize, usize))>
+    {
+        match expr.expr.run(self)
+        {
+            Ok(value) =>
+            {
+                if self.globals.set(expr.name.to_string(), match value
+                {
+                    LoxValue::Bool(value) => LoxValue::Bool(value),
+                    LoxValue::Num(value) => LoxValue::Num(value),
+                    LoxValue::Str(ref value) => LoxValue::Str(value.to_string()),
+                    LoxValue::Nil => LoxValue::Nil
+                })
+                {
+                    Ok(value)
+                }
+                else { Err(("undefined variable",
+                    (expr.start(), expr.len()))) }
+            }
+            Err(err) => Err(err)
+        }
+    }
 }

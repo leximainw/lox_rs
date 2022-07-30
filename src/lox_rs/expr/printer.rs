@@ -50,4 +50,9 @@ impl Visitor<String> for AstPrinter
 	{
 		format!("(get {})", expr.name)
 	}
+
+	fn visit_varset(&mut self, expr: &VarSet) -> String
+	{
+		format!("(set {} {})", expr.name, expr.expr.print(self))
+	}
 }
