@@ -10,6 +10,10 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for AstExecutor
 
     fn visit_printstmt(stmt: &PrintStmt) -> Result<(), (&'static str, (usize, usize))>
     {
-        Ok(())
+        match stmt.expr.run()
+        {
+            Ok(value) => { println!("{value}"); Ok(()) },
+            Err(err) => Err(err)
+        }
     }
 }
