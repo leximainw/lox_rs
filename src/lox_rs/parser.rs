@@ -13,7 +13,8 @@ use super::{
     stmt::{
         Stmt,
         ExprStmt,
-        PrintStmt
+        PrintStmt,
+        VarStmt
     },
     lexer::Lexer,
     LoxValue,
@@ -36,7 +37,7 @@ impl<'a> Iterator for Parser<'a>
 
     fn next(&mut self) -> Option<Box<dyn Stmt>>
     {
-        self.statement()
+        self.declaration()
     }
 }
 
@@ -55,6 +56,74 @@ impl Parser<'_>
     {
         self.errors.coalesce(target);
         self.lexer.unwrap().coalesce_errors(target);
+    }
+
+    fn declaration(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(token) = self.lexer.peek()
+        {
+            match token.kind
+            {
+                TokenType::Var => self.var_declaration(),
+                _ => self.statement()
+            }
+        }
+        else { None }
+    }
+
+    fn var_declaration(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(var) = self.lexer.next()
+        {
+            if let Some(name) = self.lexer.next_if(
+                |token| token.kind == TokenType::Identifier)
+            {
+                if let Some(token) = self.lexer.next()
+                {
+                    match token.kind
+                    {
+                        TokenType::Semicolon => return Some(Box::new(VarStmt{
+                            name: name.text.to_string(),
+                            expr: None
+                        })),
+                        TokenType::Equal =>
+                        {
+                            if let Some(expr) = self.expression()
+                            {
+                                if let Some(end) = self.lexer.next_if(
+                                    |token| token.kind == TokenType::Semicolon)
+                                { return Some(Box::new(VarStmt{
+                                    name: name.text.to_string(),
+                                    expr: Some(expr)
+                                })); }
+                                else
+                                {
+                                    self.errors.push("expected ; after expression",
+                                        Severity::Error, token.start + token.text.len(), 0);
+                                }
+                            }
+                            else
+                            {
+                                self.errors.push("expected expression after =",
+                                    Severity::Error, token.start + token.text.len(), 0);
+                            }
+                        },
+                        _ =>
+                        {
+                            self.errors.push("expected = or ; after name",
+                                Severity::Error, name.start + name.text.len(), 0);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                self.errors.push("expected name after 'var'",
+                    Severity::Error, var.start + var.text.len(), 0);
+            }
+            None
+        }
+        else { panic!(); }
     }
 
     fn statement(&mut self) -> Option<Box<dyn Stmt>>
@@ -111,7 +180,7 @@ impl Parser<'_>
             }
             else
             {
-                self.errors.push("expected expression statement after print",
+                self.errors.push("expected expression statement after 'print'",
                     Severity::Error, print.start + print.text.len(), 0);
             }
             None

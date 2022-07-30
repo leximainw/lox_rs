@@ -20,4 +20,9 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for AstExecutor
             Err(err) => Err(err)
         }
     }
+
+    fn visit_varstmt(stmt: &VarStmt) -> Result<(), (&'static str, (usize, usize))>
+    {
+        todo!();
+    }
 }
