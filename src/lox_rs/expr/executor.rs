@@ -1,13 +1,13 @@
+use super::super::VM;
 use super::*;
 
-pub struct AstExecutor{}
-impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
+impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
 {
-    fn visit_binary(expr: &Binary) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_binary(&mut self, expr: &Binary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
-        match expr.left.run()
+        match expr.left.run(self)
         {
-            Ok(lval) => match expr.right.run()
+            Ok(lval) => match expr.right.run(self)
             {
                 Ok(rval) => match expr.oper
                 {
@@ -102,16 +102,16 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
         }
     }
 
-    fn visit_grouping(expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_grouping(&mut self, expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
-        expr.expr.run()
+        expr.expr.run(self)
     }
 
-    fn visit_unary(expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_unary(&mut self, expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match expr.oper
         {
-            TokenType::Bang => match expr.expr.run()
+            TokenType::Bang => match expr.expr.run(self)
             {
                 Ok(value) => match value
                 {
@@ -124,7 +124,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
             },
             TokenType::Minus =>
             {
-                match expr.expr.run()
+                match expr.expr.run(self)
                 {
                     Ok(value) => if let LoxValue::Num(num) = value
                     {
@@ -139,7 +139,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor
         }
     }
 
-    fn visit_literal(expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_literal(&mut self, expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match &expr.value
         {

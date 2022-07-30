@@ -1,9 +1,11 @@
 pub mod errors;
+pub mod vm;
 mod expr;
 mod stmt;
 mod lexer;
 mod npeekable;
 mod parser;
+pub use self::vm::VM as VM;
 pub use self::errors::Errors as Errors;
 pub use self::lexer::Lexer as Lexer;
 pub use self::parser::Parser as Parser;
@@ -29,7 +31,6 @@ pub struct Token<'a>
     pub value: LoxValue
 }
 
-#[derive(Debug)]   // TODO: remove when not printing TokenType names
 #[derive(Clone, Copy)]
 #[derive(Eq, PartialEq)]
 pub enum TokenType

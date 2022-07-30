@@ -30,10 +30,10 @@ fn generate_ast(mut slice: &str) -> String
     const MAIN_TRAIT: &str = "\npub trait MAIN\n{\n\tMETHODS\n}\n";
     const MAIN_ATTR: &str = "\tpub NAME: TYPE;\n";
     const ATTR_DECL: &str = "\tfn NAME(&self) -> TYPE;\n";
-    const MAIN_VISIT: &str = "\tfn VERB(&self) -> RETURNS;\n";
-    const MAIN_VISIT_BODY: &str = "\n\t{ VISIT::visit_TYPEL(self) }";
+    const MAIN_VISIT: &str = "\tfn VERB(&self, VERB: &mut TYPE) -> RETURNS;\n";
+    const MAIN_VISIT_BODY: &str = "\n\t{ VERB.visit_TYPEL(self) }";
     const VISIT_TRAIT: &str = "\ntrait Visitor<I>\n{\nMETHODS}\n";
-    const VISIT_METHOD: &str = "\tfn visit_TYPEL(expr: &TYPE) -> I;\n";
+    const VISIT_METHOD: &str = "\tfn visit_TYPEL(&mut self, expr: &TYPE) -> I;\n";
     const VISIT_CODE: &str = "\nimpl MAIN for TYPE\n{\n\tMETHODS\n}\n";
 
     if let Some(index) = slice.find(GEN_MARKER)
@@ -199,6 +199,7 @@ fn generate_ast(mut slice: &str) -> String
                 .replace("TYPE", kind)
                 .replace("RETURNS", returns)
                 .replace(";", &MAIN_VISIT_BODY.to_string()
+                    .replace("VERB", verb)
                     .replace("VISIT", kind))
         }).collect::<Vec<String>>().join(""));
     }

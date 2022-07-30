@@ -9,8 +9,8 @@ use super::{
 // impl Visitor<String> for AstPrinter: print;
 use printer::AstPrinter;
 
-// impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for AstExecutor: run;
-use executor::AstExecutor;
+// impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM: run;
+use super::VM;
 
 // trait: Expr;
 // attr start: usize;
@@ -28,16 +28,16 @@ pub trait Expr
 	fn start(&self) -> usize;
 	fn len(&self) -> usize;
 
-	fn print(&self) -> String;
-	fn run(&self) -> Result<LoxValue, (&'static str, (usize, usize))>;
+	fn print(&self, print: &mut AstPrinter) -> String;
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>;
 }
 
 trait Visitor<I>
 {
-	fn visit_binary(expr: &Binary) -> I;
-	fn visit_grouping(expr: &Grouping) -> I;
-	fn visit_literal(expr: &Literal) -> I;
-	fn visit_unary(expr: &Unary) -> I;
+	fn visit_binary(&mut self, expr: &Binary) -> I;
+	fn visit_grouping(&mut self, expr: &Grouping) -> I;
+	fn visit_literal(&mut self, expr: &Literal) -> I;
+	fn visit_unary(&mut self, expr: &Unary) -> I;
 }
 
 pub struct Binary
@@ -56,10 +56,10 @@ impl Expr for Binary
 	fn len(&self) -> usize
 	{ self.len }
 
-	fn print(&self) -> String
-	{ AstPrinter::visit_binary(self) }
-	fn run(&self) -> Result<LoxValue, (&'static str, (usize, usize))>
-	{ AstExecutor::visit_binary(self) }
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_binary(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_binary(self) }
 }
 
 pub struct Grouping
@@ -76,10 +76,10 @@ impl Expr for Grouping
 	fn len(&self) -> usize
 	{ self.len }
 
-	fn print(&self) -> String
-	{ AstPrinter::visit_grouping(self) }
-	fn run(&self) -> Result<LoxValue, (&'static str, (usize, usize))>
-	{ AstExecutor::visit_grouping(self) }
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_grouping(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_grouping(self) }
 }
 
 pub struct Literal
@@ -96,10 +96,10 @@ impl Expr for Literal
 	fn len(&self) -> usize
 	{ self.len }
 
-	fn print(&self) -> String
-	{ AstPrinter::visit_literal(self) }
-	fn run(&self) -> Result<LoxValue, (&'static str, (usize, usize))>
-	{ AstExecutor::visit_literal(self) }
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_literal(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_literal(self) }
 }
 
 pub struct Unary
@@ -117,8 +117,8 @@ impl Expr for Unary
 	fn len(&self) -> usize
 	{ self.len }
 
-	fn print(&self) -> String
-	{ AstPrinter::visit_unary(self) }
-	fn run(&self) -> Result<LoxValue, (&'static str, (usize, usize))>
-	{ AstExecutor::visit_unary(self) }
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_unary(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_unary(self) }
 }

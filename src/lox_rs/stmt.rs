@@ -2,8 +2,8 @@ pub mod executor;
 
 use super::expr::Expr;
 
-// impl Visitor<Result<(), (&'static str, (usize, usize))>> for AstExecutor: run;
-use executor::AstExecutor;
+// impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM: run;
+use super::VM;
 
 // trait: Stmt;
 
@@ -15,14 +15,14 @@ use executor::AstExecutor;
 
 pub trait Stmt
 {
-	fn run(&self) -> Result<(), (&'static str, (usize, usize))>;
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>;
 }
 
 trait Visitor<I>
 {
-	fn visit_exprstmt(expr: &ExprStmt) -> I;
-	fn visit_printstmt(expr: &PrintStmt) -> I;
-	fn visit_varstmt(expr: &VarStmt) -> I;
+	fn visit_exprstmt(&mut self, expr: &ExprStmt) -> I;
+	fn visit_printstmt(&mut self, expr: &PrintStmt) -> I;
+	fn visit_varstmt(&mut self, expr: &VarStmt) -> I;
 }
 
 pub struct ExprStmt
@@ -32,8 +32,8 @@ pub struct ExprStmt
 
 impl Stmt for ExprStmt
 {
-	fn run(&self) -> Result<(), (&'static str, (usize, usize))>
-	{ AstExecutor::visit_exprstmt(self) }
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	{ run.visit_exprstmt(self) }
 }
 
 pub struct PrintStmt
@@ -43,8 +43,8 @@ pub struct PrintStmt
 
 impl Stmt for PrintStmt
 {
-	fn run(&self) -> Result<(), (&'static str, (usize, usize))>
-	{ AstExecutor::visit_printstmt(self) }
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	{ run.visit_printstmt(self) }
 }
 
 pub struct VarStmt
@@ -55,6 +55,6 @@ pub struct VarStmt
 
 impl Stmt for VarStmt
 {
-	fn run(&self) -> Result<(), (&'static str, (usize, usize))>
-	{ AstExecutor::visit_varstmt(self) }
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	{ run.visit_varstmt(self) }
 }
