@@ -1,17 +1,23 @@
 # Extended Backus-Naur Form for Lox.rs:
 
-expression  -> equality;
-equality    -> comparison (("==" | "!=") comparison)*;
-comparison  -> term (("<" | "<=" | ">" | ">=") term)*;
-term        -> factor (("+" | "-") factor)*;
-factor      -> unary (("*" | "/" | "%") unary)*;
-unary       -> ("!" | "-") unary | primary;
-primary     -> "(" primary ")" | value | IDENTIFIER;
+program         -> statement* EOF;
+statement       -> exprStatement
+                 | printStatement;
+exprStatement   -> expression ";";
+printStatement  -> "print" expression ";";
 
-value       -> STRING | NUMBER | BOOL | NIL;
+expression      -> equality;
+equality        -> comparison (("==" | "!=") comparison)*;
+comparison      -> term (("<" | "<=" | ">" | ">=") term)*;
+term            -> factor (("+" | "-") factor)*;
+factor          -> unary (("*" | "/" | "%") unary)*;
+unary           -> ("!" | "-") unary | primary;
+primary         -> "(" primary ")" | value | IDENTIFIER;
 
-IDENTIFIER  -> /[A-Za-z_][A-Za-z0-9_]*/
-STRING      -> /"(\\.|[^"])*"/
-NUMBER      -> /[0-9]+(\.[0-9]+)?([eE][0-9]+)?/
-BOOL        -> /(true)|(false)/
-NIL         -> nil
+value           -> STRING | NUMBER | BOOL | NIL;
+
+IDENTIFIER      -> /[A-Za-z_][A-Za-z0-9_]*/
+STRING          -> /"(\\.|[^"])*"/
+NUMBER          -> /[0-9]+(\.[0-9]+)?([eE][0-9]+)?/
+BOOL            -> /(true)|(false)/
+NIL             -> nil
