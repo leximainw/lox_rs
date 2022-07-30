@@ -79,7 +79,7 @@ impl Parser<'_>
                         {
                             if let Some(expr) = self.expression()
                             {
-                                if let Some(end) = self.lexer.next_if(
+                                if let Some(_) = self.lexer.next_if(
                                     |token| token.kind == TokenType::Semicolon)
                                 { return Some(Box::new(VarStmt{
                                     name: name.text.to_string(),
@@ -132,7 +132,7 @@ impl Parser<'_>
     {
         if let Some(expr) = self.expression()
         {
-            if let Some(token) = self.lexer.next_if(
+            if let Some(_) = self.lexer.next_if(
                 |token| token.kind == TokenType::Semicolon)
             {
                 return Some(Box::new(ExprStmt{
@@ -154,7 +154,7 @@ impl Parser<'_>
         {
             if let Some(expr) = self.expression()
             {
-                if let Some(token) = self.lexer.next_if(
+                if let Some(_) = self.lexer.next_if(
                     |token| token.kind == TokenType::Semicolon)
                 {
                     return Some(Box::new(PrintStmt{
