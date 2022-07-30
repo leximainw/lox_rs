@@ -171,7 +171,7 @@ fn generate_ast(mut slice: &str) -> String
             .replace("NAME", name)
             .replace("TYPE", kind)
     }).collect::<Vec<String>>().join("");
-    let mut attr_impl = attrs.iter().map(|tuple| {
+    let attr_impl = attrs.iter().map(|tuple| {
         let (name, kind) = tuple;
         ATTR_DECL.to_string()
             .replace(";", " { self.NAME }")

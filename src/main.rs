@@ -14,7 +14,7 @@ use lox_rs::{
 
 fn main()
 {
-    let mut vm: VM = VM::new();
+    let vm: VM = VM::new();
     let args: Vec<String> = env::args().collect();
     if args.len() > 2
     {
