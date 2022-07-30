@@ -6,10 +6,8 @@ use super::{
     expr::*,
     stmt::*,
     lexer::Lexer,
-    LoxValue,
     NPeekable,
     NPeekableExt,
-    Token,
     TokenType
 };
 

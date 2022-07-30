@@ -7,10 +7,7 @@ use std::{
     str
 };
 
-use lox_rs::{
-    Errors,
-    VM
-};
+use lox_rs::VM;
 
 fn main()
 {
