@@ -1,11 +1,14 @@
+use std::collections::HashMap;
+
 use super::{
     Errors,
-    Parser
+    Parser,
+    LoxValue
 };
 
 pub struct VM
 {
-    
+    pub globals: HashMap<String, LoxValue>
 }
 
 impl VM
@@ -13,7 +16,7 @@ impl VM
     pub fn new() -> VM
     {
         VM{
-
+            globals: HashMap::new()
         }
     }
 

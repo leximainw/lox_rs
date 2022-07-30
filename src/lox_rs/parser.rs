@@ -3,19 +3,8 @@ use super::{
         Errors,
         Severity
     },
-    expr::{
-        Expr,
-        Binary,
-        Grouping,
-        Literal,
-        Unary
-    },
-    stmt::{
-        Stmt,
-        ExprStmt,
-        PrintStmt,
-        VarStmt
-    },
+    expr::*,
+    stmt::*,
     lexer::Lexer,
     LoxValue,
     NPeekable,
@@ -384,12 +373,11 @@ impl Parser<'_>
                     len: token.text.len(),
                     value: token.value
                 })),
-                TokenType::Identifier =>
-                {
-                    self.errors.push("identifiers not yet implemented",
-                        Severity::Error, token.start, token.text.len());
-                    None
-                },
+                TokenType::Identifier => Some(Box::new(VarGet{
+                    start: token.start,
+                    len: token.text.len(),
+                    name: token.text.to_string()
+                })),
                 TokenType::LeftParen =>
                 {
                     if let Some(expr) = self.expression()

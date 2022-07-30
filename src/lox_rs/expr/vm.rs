@@ -107,6 +107,17 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         expr.expr.run(self)
     }
 
+    fn visit_literal(&mut self, expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
+    {
+        match &expr.value
+        {
+            LoxValue::Bool(value) => Ok(LoxValue::Bool(*value)),
+            LoxValue::Num(value) => Ok(LoxValue::Num(*value)),
+            LoxValue::Str(value) => Ok(LoxValue::Str(value.to_string())),
+            LoxValue::Nil => Ok(LoxValue::Nil)
+        }
+    }
+
     fn visit_unary(&mut self, expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match expr.oper
@@ -139,14 +150,18 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_literal(&mut self, expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_varget(&mut self, expr: &VarGet) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
-        match &expr.value
+        if let Some(value) = self.globals.get(&expr.name)
         {
-            LoxValue::Bool(value) => Ok(LoxValue::Bool(*value)),
-            LoxValue::Num(value) => Ok(LoxValue::Num(*value)),
-            LoxValue::Str(value) => Ok(LoxValue::Str(value.to_string())),
-            LoxValue::Nil => Ok(LoxValue::Nil)
+            match value
+            {
+                LoxValue::Bool(value) => Ok(LoxValue::Bool(*value)),
+                LoxValue::Num(value) => Ok(LoxValue::Num(*value)),
+                LoxValue::Str(value) => Ok(LoxValue::Str(value.to_string())),
+                LoxValue::Nil => Ok(LoxValue::Nil)
+            }
         }
+        else { Ok(LoxValue::Nil) }
     }
 }

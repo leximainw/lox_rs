@@ -45,4 +45,9 @@ impl Visitor<String> for AstPrinter
 		};
 		format!("({oper} {})", expr.expr.print(self))
 	}
+
+	fn visit_varget(&mut self, expr: &VarGet) -> String
+	{
+		format!("(get {})", expr.name)
+	}
 }

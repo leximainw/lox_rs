@@ -23,6 +23,18 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
 
     fn visit_varstmt(&mut self, stmt: &VarStmt) -> Result<(), (&'static str, (usize, usize))>
     {
-        todo!();
+        if let Some(expr) = &stmt.expr
+        {
+            match expr.run(self)
+            {
+                Ok(value) =>
+                {
+                    self.globals.insert(stmt.name.to_string(), value);
+                    Ok(())
+                },
+                Err(err) => Err(err)
+            }
+        }
+        else { Ok(()) }
     }
 }
