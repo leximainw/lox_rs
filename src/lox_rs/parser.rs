@@ -4,14 +4,16 @@ use super::{
         Severity
     },
     expr::{
-        Binary,
         Expr,
+        Binary,
         Grouping,
         Literal,
         Unary
     },
     stmt::{
-        Stmt
+        Stmt,
+        ExprStmt,
+        PrintStmt
     },
     lexer::Lexer,
     LoxValue,
@@ -57,7 +59,64 @@ impl Parser<'_>
 
     fn statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        todo!();
+        if let Some(token) = self.lexer.peek()
+        {
+            match token.kind
+            {
+                TokenType::Print => self.print_statement(),
+                _ => self.expr_statement()
+            }
+        }
+        else { None }
+    }
+
+    fn expr_statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(expr) = self.expression()
+        {
+            if let Some(token) = self.lexer.next_if(
+                |token| token.kind == TokenType::Semicolon)
+            {
+                return Some(Box::new(ExprStmt{
+                    expr
+                }));
+            }
+            else
+            {
+                self.errors.push("expected semicolon after expression statement",
+                    Severity::Error, expr.start() + expr.len(), 0);
+            }
+        }
+        None
+    }
+
+    fn print_statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(print) = self.lexer.next()
+        {
+            if let Some(expr) = self.expression()
+            {
+                if let Some(token) = self.lexer.next_if(
+                    |token| token.kind == TokenType::Semicolon)
+                {
+                    return Some(Box::new(PrintStmt{
+                        expr
+                    }));
+                }
+                else
+                {
+                    self.errors.push("expected semicolon after print statement",
+                        Severity::Error, expr.start() + expr.len(), 0);
+                }
+            }
+            else
+            {
+                self.errors.push("expected expression statement after print",
+                    Severity::Error, print.start + print.text.len(), 0);
+            }
+            None
+        }
+        else { panic!(); }
     }
 
     fn expression(&mut self) -> Option<Box<dyn Expr>>
