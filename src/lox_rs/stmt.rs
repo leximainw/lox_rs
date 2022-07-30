@@ -1,4 +1,4 @@
-pub mod executor;
+pub mod vm;
 
 use super::expr::Expr;
 
