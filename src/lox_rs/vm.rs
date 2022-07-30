@@ -8,7 +8,7 @@ use super::{
 
 pub struct VM
 {
-    pub globals: HashMap<String, LoxValue>
+    pub globals: Scope
 }
 
 impl VM
@@ -16,7 +16,7 @@ impl VM
     pub fn new() -> VM
     {
         VM{
-            globals: HashMap::new()
+            globals: Scope::new()
         }
     }
 
@@ -81,5 +81,30 @@ impl VM
         {
             println!("{}", format!("{:>1$}", "here __/", start + line_prefix.len()));
         }
+    }
+}
+
+pub struct Scope
+{
+    pub vars: HashMap<String, LoxValue>
+}
+
+impl Scope
+{
+    pub fn new() -> Scope
+    {
+        Scope{
+            vars: HashMap::new()
+        }
+    }
+
+    pub fn define(&mut self, name: String, value: LoxValue)
+    {
+        self.vars.insert(name, value);
+    }
+
+    pub fn get(&mut self, name: &String) -> Option<&LoxValue>
+    {
+        self.vars.get(name)
     }
 }
