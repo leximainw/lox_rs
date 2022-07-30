@@ -162,6 +162,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 LoxValue::Nil => Ok(LoxValue::Nil)
             }
         }
-        else { Ok(LoxValue::Nil) }
+        else { Err(("undefined variable",
+            (expr.start(), expr.len()))) }
     }
 }
