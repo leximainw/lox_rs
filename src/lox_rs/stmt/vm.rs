@@ -1,5 +1,10 @@
-use super::super::VM;
-use super::*;
+use super::{
+    *,
+    super::{
+        LoxValue,
+        VM
+    }
+};
 
 impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
 {
@@ -35,6 +40,10 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
                 Err(err) => Err(err)
             }
         }
-        else { Ok(()) }
+        else
+        {
+            self.curr_scope.define(stmt.name.to_string(), LoxValue::Nil);
+            Ok(())
+        }
     }
 }
