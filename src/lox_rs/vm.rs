@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::mem::swap;
 
 use super::{
     Errors,
@@ -39,6 +40,23 @@ impl VM
         }
         parser.coalesce_errors(&mut errors);
         errors.print_errors(Box::new(|code, msg, sev, start, len| Self::print_error(code, msg, sev, start, len)));
+    }
+
+    pub fn new_scope(&mut self)
+    {
+        let mut scope = Scope::new();
+        swap(&mut scope, &mut self.curr_scope);
+        self.curr_scope = Scope::new_inner(scope);
+    }
+
+    pub fn unscope(&mut self)
+    {
+        let mut scope = Scope::new();
+        swap(&mut scope, &mut self.curr_scope);
+        if let Some(scope) = scope.unscope()
+        {
+            self.curr_scope = *scope;
+        }
     }
 
     fn print_error(code: &str, sev: &str, msg: &str, start: usize, len: usize)

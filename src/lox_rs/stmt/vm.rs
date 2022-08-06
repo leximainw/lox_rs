@@ -10,14 +10,20 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
 {
     fn visit_blockstmt(&mut self, block: &BlockStmt) -> Result<(), (&'static str, (usize, usize))>
     {
+        self.new_scope();
         for stmt in &block.stmts
         {
             match stmt.run(self)
             {
                 Ok(_) => {},
-                Err(err) => return Err(err)
+                Err(err) =>
+                {
+                    self.unscope();
+                    return Err(err);
+                }
             }
         }
+        self.unscope();
         return Ok(());
     }
 
