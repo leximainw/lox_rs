@@ -136,7 +136,7 @@ impl Scope
             self.vars.insert(name, value);
             true
         }
-        else if let Some(mut outer) = self.outer.as_mut()
+        else if let Some(outer) = self.outer.as_mut()
         {
             outer.set(name, value)
         }

@@ -1,7 +1,8 @@
 pub struct Errors<'a>
 {
     source: &'a str,
-    error_list: Vec<Error>
+    error_list: Vec<Error>,
+    flag: bool
 }
 
 impl Errors<'_>
@@ -10,7 +11,8 @@ impl Errors<'_>
     {
         Errors{
             source,
-            error_list: Vec::new()
+            error_list: Vec::new(),
+            flag: false
         }
     }
 
@@ -21,11 +23,25 @@ impl Errors<'_>
         });
     }
 
-    pub fn push(&mut self, message: &'static str, severity: Severity, start: usize, length: usize)
+    pub fn push(&mut self, message: &'static str, severity: Severity, start: usize, length: usize, flag: bool)
     {
-        self.error_list.push(Error{
-            message, severity, start, length
-        })
+        if !self.flag
+        {
+            self.flag = flag;
+            self.error_list.push(Error{
+                message, severity, start, length
+            })
+        }
+    }
+
+    pub fn get_flag(&self) -> bool
+    {
+        self.flag
+    }
+
+    pub fn set_flag(&mut self, value: bool)
+    {
+        self.flag = value;
     }
 
     pub fn coalesce(&mut self, target: &mut Errors)

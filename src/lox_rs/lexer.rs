@@ -176,7 +176,7 @@ impl Lexer<'_>
             _ =>
             {
                 self.errors.push("unexpected character",
-                    Severity::Error, self.token_start, 1);
+                    Severity::Error, self.token_start, 1, false);
                 TokenType::Error
             }
         };
