@@ -86,7 +86,8 @@ impl VM
 
 pub struct Scope
 {
-    pub vars: HashMap<String, LoxValue>
+    pub vars: HashMap<String, LoxValue>,
+    pub outer: Option<Box<Scope>>
 }
 
 impl Scope
@@ -94,7 +95,16 @@ impl Scope
     pub fn new() -> Scope
     {
         Scope{
-            vars: HashMap::new()
+            vars: HashMap::new(),
+            outer: None
+        }
+    }
+
+    pub fn new_inner(outer: Scope) -> Scope
+    {
+        Scope{
+            vars: HashMap::new(),
+            outer: Some(Box::new(outer))
         }
     }
 
@@ -116,5 +126,10 @@ impl Scope
             true
         }
         else { false }
+    }
+
+    pub fn unscope(self) -> Option<Box<Scope>>
+    {
+        self.outer
     }
 }
