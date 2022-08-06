@@ -24,7 +24,21 @@ impl<'a> Iterator for Parser<'a>
 
     fn next(&mut self) -> Option<Box<dyn Stmt>>
     {
-        self.declaration()
+        loop
+        {
+            if let Some(stmt) = self.declaration()
+            {
+                return Some(stmt);
+            }
+            else if self.errors.get_flag()
+            {
+                self.synchronize();
+            }
+            else
+            {
+                return None;
+            }
+        }
     }
 }
 
@@ -43,6 +57,27 @@ impl Parser<'_>
     {
         self.errors.coalesce(target);
         self.lexer.unwrap().coalesce_errors(target);
+    }
+
+    fn synchronize(&mut self)
+    {
+        self.errors.set_flag(false);
+        while let Some(token) = self.lexer.peek()
+        {
+            match token.kind
+            {
+                TokenType::Semicolon =>
+                {
+                    self.lexer.next();
+                    return
+                },
+                TokenType::Class | TokenType::For
+                | TokenType::Fn | TokenType::If
+                | TokenType::Print | TokenType::Return
+                | TokenType::Var | TokenType::While => return,
+                _ => {}
+            }
+        }
     }
 
     fn declaration(&mut self) -> Option<Box<dyn Stmt>>
