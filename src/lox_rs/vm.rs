@@ -115,7 +115,18 @@ impl Scope
 
     pub fn get(&mut self, name: &String) -> Option<&LoxValue>
     {
-        self.vars.get(name)
+        if let Some(value) = self.vars.get(name)
+        {
+            Some(value)
+        }
+        else if let Some(mut outer) = self.outer.as_mut()
+        {
+            outer.get(name)
+        }
+        else
+        {
+            None
+        }
     }
 
     pub fn set(&mut self, name: String, value: LoxValue) -> bool
@@ -125,7 +136,14 @@ impl Scope
             self.vars.insert(name, value);
             true
         }
-        else { false }
+        else if let Some(mut outer) = self.outer.as_mut()
+        {
+            outer.set(name, value)
+        }
+        else
+        {
+            false
+        }
     }
 
     pub fn unscope(self) -> Option<Box<Scope>>
