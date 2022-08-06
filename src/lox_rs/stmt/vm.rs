@@ -8,6 +8,19 @@ use super::{
 
 impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
 {
+    fn visit_blockstmt(&mut self, block: &BlockStmt) -> Result<(), (&'static str, (usize, usize))>
+    {
+        for stmt in &block.stmts
+        {
+            match stmt.run(self)
+            {
+                Ok(_) => {},
+                Err(err) => return Err(err)
+            }
+        }
+        return Ok(());
+    }
+
     fn visit_exprstmt(&mut self, stmt: &ExprStmt) -> Result<(), (&'static str, (usize, usize))>
     {
         match stmt.expr.run(self)

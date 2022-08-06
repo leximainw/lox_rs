@@ -106,17 +106,21 @@ impl Parser<'_>
                     {
                         TokenType::Semicolon => return Some(Box::new(VarStmt{
                             name: name.text.to_string(),
-                            expr: None
+                            expr: None,
+                            start: var.start,
+                            len: token.start - var.start + 1
                         })),
                         TokenType::Equal =>
                         {
                             if let Some(expr) = self.expression()
                             {
-                                if let Some(_) = self.lexer.next_if(
+                                if let Some(end) = self.lexer.next_if(
                                     |token| token.kind == TokenType::Semicolon)
                                 { return Some(Box::new(VarStmt{
                                     name: name.text.to_string(),
-                                    expr: Some(expr)
+                                    expr: Some(expr),
+                                    start: var.start,
+                                    len: end.start - var.start + 1
                                 })); }
                                 else
                                 {
@@ -154,6 +158,20 @@ impl Parser<'_>
         {
             match token.kind
             {
+                TokenType::LeftBrace =>
+                {
+                    let start = token.start;
+                    let block = self.block_statement();
+                    match block
+                    {
+                        Some((stmts, end)) => Some(Box::new(BlockStmt{
+                            stmts,
+                            start,
+                            len: end - start
+                        })),
+                        None => None
+                    }
+                }
                 TokenType::Print => self.print_statement(),
                 _ => self.expr_statement()
             }
@@ -161,15 +179,61 @@ impl Parser<'_>
         else { None }
     }
 
+    fn block_statement(&mut self) -> Option<(Vec<Box<dyn Stmt>>, usize)>
+    {
+        let mut stmts = Vec::new();
+        if let Some(brace) = self.lexer.next()
+        {
+            loop
+            {
+                if let Some(brace) = self.lexer.peek()
+                {
+                    match brace.kind
+                    {
+                        TokenType::RightBrace =>
+                        {
+                            let end = brace.start + 1;
+                            self.lexer.next();
+                            return Some((stmts, end));
+                        },
+                        _ =>
+                        {
+                            if let Some(stmt) = self.declaration()
+                            { stmts.push(stmt); }
+                            else { return None; }
+                        }
+                    }
+                }
+                else if stmts.len() != 0
+                {
+                    let last_stmt = &stmts[stmts.len() - 1];
+                    self.errors.push("expected closing brace after block",
+                        Severity::Error, last_stmt.start() + last_stmt.len(), 0, true);
+                    return None;
+                }
+                else
+                {
+                    self.errors.push("expected closing brace after block",
+                        Severity::Error, brace.start + 1, 0, true);
+                    return None;
+                }
+            }
+        }
+        else { panic!(); }
+    }
+
     fn expr_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
         if let Some(expr) = self.expression()
         {
-            if let Some(_) = self.lexer.next_if(
+            if let Some(end) = self.lexer.next_if(
                 |token| token.kind == TokenType::Semicolon)
             {
+                let start = expr.start();
                 return Some(Box::new(ExprStmt{
-                    expr
+                    expr,
+                    start: start,
+                    len: end.start - start + 1
                 }));
             }
             else
@@ -187,11 +251,13 @@ impl Parser<'_>
         {
             if let Some(expr) = self.expression()
             {
-                if let Some(_) = self.lexer.next_if(
+                if let Some(end) = self.lexer.next_if(
                     |token| token.kind == TokenType::Semicolon)
                 {
                     return Some(Box::new(PrintStmt{
-                        expr
+                        expr,
+                        start: print.start,
+                        len: end.start - print.start + 1
                     }));
                 }
                 else

@@ -6,7 +6,10 @@ use super::expr::Expr;
 use super::VM;
 
 // trait: Stmt;
+// attr start: usize;
+// attr len: usize;
 
+// type BlockStmt: stmts: Vec<Box<dyn Stmt>>;
 // type ExprStmt: expr: Box<dyn Expr>;
 // type PrintStmt: expr: Box<dyn Expr>;
 // type VarStmt: name: String, expr: Option<Box<dyn Expr>>;
@@ -15,46 +18,81 @@ use super::VM;
 
 pub trait Stmt
 {
+	fn start(&self) -> usize;
+	fn len(&self) -> usize;
+
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>;
 }
 
 trait Visitor<I>
 {
+	fn visit_blockstmt(&mut self, expr: &BlockStmt) -> I;
 	fn visit_exprstmt(&mut self, expr: &ExprStmt) -> I;
 	fn visit_printstmt(&mut self, expr: &PrintStmt) -> I;
 	fn visit_varstmt(&mut self, expr: &VarStmt) -> I;
 }
 
+pub struct BlockStmt
+{
+	pub start: usize,
+	pub len: usize,
+	pub stmts: Vec<Box<dyn Stmt>>
+}
+
+impl Stmt for BlockStmt
+{
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	{ run.visit_blockstmt(self) }
+}
+
 pub struct ExprStmt
 {
+	pub start: usize,
+	pub len: usize,
 	pub expr: Box<dyn Expr>
 }
 
 impl Stmt for ExprStmt
 {
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_exprstmt(self) }
 }
 
 pub struct PrintStmt
 {
+	pub start: usize,
+	pub len: usize,
 	pub expr: Box<dyn Expr>
 }
 
 impl Stmt for PrintStmt
 {
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_printstmt(self) }
 }
 
 pub struct VarStmt
 {
+	pub start: usize,
+	pub len: usize,
 	pub name: String,
 	pub expr: Option<Box<dyn Expr>>
 }
 
 impl Stmt for VarStmt
 {
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_varstmt(self) }
 }
