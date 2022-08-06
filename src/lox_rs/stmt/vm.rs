@@ -29,7 +29,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
             {
                 Ok(value) =>
                 {
-                    self.globals.define(stmt.name.to_string(), value);
+                    self.curr_scope.define(stmt.name.to_string(), value);
                     Ok(())
                 },
                 Err(err) => Err(err)

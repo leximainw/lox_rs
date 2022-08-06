@@ -152,7 +152,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
 
     fn visit_varget(&mut self, expr: &VarGet) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
-        if let Some(value) = self.globals.get(&expr.name)
+        if let Some(value) = self.curr_scope.get(&expr.name)
         {
             match value
             {
@@ -172,7 +172,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         {
             Ok(value) =>
             {
-                if self.globals.set(expr.name.to_string(), match value
+                if self.curr_scope.set(expr.name.to_string(), match value
                 {
                     LoxValue::Bool(value) => LoxValue::Bool(value),
                     LoxValue::Num(value) => LoxValue::Num(value),

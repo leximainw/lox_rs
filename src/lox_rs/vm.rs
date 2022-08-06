@@ -8,7 +8,7 @@ use super::{
 
 pub struct VM
 {
-    pub globals: Scope
+    pub curr_scope: Scope
 }
 
 impl VM
@@ -16,7 +16,7 @@ impl VM
     pub fn new() -> VM
     {
         VM{
-            globals: Scope::new()
+            curr_scope: Scope::new()
         }
     }
 
