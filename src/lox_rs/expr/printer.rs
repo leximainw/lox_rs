@@ -35,6 +35,18 @@ impl Visitor<String> for AstPrinter
 		format!("{:?}", expr.value)
 	}
 
+	fn visit_logical(&mut self, expr: &Logical) -> String
+	{
+		let oper = match expr.oper
+		{
+			TokenType::Or => "or",
+			_ => panic!()
+		};
+		format!("({oper} {} {})",
+			expr.left.print(self),
+			expr.right.print(self))
+	}
+
 	fn visit_unary(&mut self, expr: &Unary) -> String
 	{
 		let oper = match expr.oper

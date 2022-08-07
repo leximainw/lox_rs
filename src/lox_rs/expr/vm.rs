@@ -118,6 +118,28 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
+    fn visit_logical(&mut self, expr: &Logical) -> Result<LoxValue, (&'static str, (usize, usize))>
+    {
+        match expr.left.run(self)
+        {
+            Ok(lval) =>
+            {
+                let lbool = LoxValue::is_truthy(&lval);
+                match expr.oper
+                {
+                    TokenType::Or if lbool => return Ok(lval),
+                    _ => {}
+                }
+            },
+            Err(err) => return Err(err)
+        }
+        match expr.right.run(self)
+        {
+            Ok(rval) => Ok(rval),
+            Err(err) => Err(err)
+        }
+    }
+
     fn visit_unary(&mut self, expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         match expr.oper

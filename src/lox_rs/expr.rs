@@ -20,6 +20,7 @@ use super::VM;
 // type Binary: left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>;
 // type Grouping: expr: Box<dyn Expr>;
 // type Literal: value: LoxValue;
+// type Logical: left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>;
 // type Unary: oper: TokenType, expr: Box<dyn Expr>;
 // type VarGet: name: String;
 // type VarSet: name: String, expr: Box<dyn Expr>;
@@ -41,6 +42,7 @@ trait Visitor<I>
 	fn visit_binary(&mut self, expr: &Binary) -> I;
 	fn visit_grouping(&mut self, expr: &Grouping) -> I;
 	fn visit_literal(&mut self, expr: &Literal) -> I;
+	fn visit_logical(&mut self, expr: &Logical) -> I;
 	fn visit_unary(&mut self, expr: &Unary) -> I;
 	fn visit_varget(&mut self, expr: &VarGet) -> I;
 	fn visit_varset(&mut self, expr: &VarSet) -> I;
@@ -103,6 +105,27 @@ impl Expr for Literal
 	{ print.visit_literal(self) }
 	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
 	{ run.visit_literal(self) }
+}
+
+pub struct Logical
+{
+	pub start: usize,
+	pub len: usize,
+	pub left: Box<dyn Expr>,
+	pub oper: TokenType,
+	pub right: Box<dyn Expr>
+}
+
+impl Expr for Logical
+{
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+	fn as_varget(&self) -> Option<&VarGet> { None }
+
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_logical(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_logical(self) }
 }
 
 pub struct Unary
