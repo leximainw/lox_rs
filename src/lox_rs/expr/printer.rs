@@ -39,6 +39,7 @@ impl Visitor<String> for AstPrinter
 	{
 		let oper = match expr.oper
 		{
+			TokenType::And => "and",
 			TokenType::Or => "or",
 			_ => panic!()
 		};

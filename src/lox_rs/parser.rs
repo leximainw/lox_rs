@@ -387,10 +387,47 @@ impl Parser<'_>
 
     fn logic_or(&mut self) -> Option<Box<dyn Expr>>
     {
-        if let Some(mut left) = self.equality()
+        if let Some(mut left) = self.logic_and()
         {
             while let Some(oper) = self.lexer.next_if(
                 |token| { token.kind == TokenType::Or })
+            {
+                if let Some(right) = self.logic_and()
+                {
+                    left = Box::new(Logical{
+                        start: left.start(),
+                        len: right.start() - left.start() + right.len(),
+                        left,
+                        oper: oper.kind,
+                        right
+                    })
+                }
+                else
+                {
+                    self.errors.push("expected expression after operator",
+                        Severity::Error, oper.start + oper.text.len(), 0, true);
+                    return None;
+                }
+            }
+            Some(left)
+        }
+        else
+        {
+            if let Some(token) = self.lexer.peek()
+            {
+                self.errors.push("expected expression",
+                    Severity::Error, token.start, token.text.len(), true);
+            }
+            None
+        }
+    }
+
+    fn logic_and(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(mut left) = self.equality()
+        {
+            while let Some(oper) = self.lexer.next_if(
+                |token| { token.kind == TokenType::And })
             {
                 if let Some(right) = self.equality()
                 {

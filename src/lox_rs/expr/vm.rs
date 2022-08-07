@@ -127,6 +127,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 let lbool = LoxValue::is_truthy(&lval);
                 match expr.oper
                 {
+                    TokenType::And if !lbool => return Ok(lval),
                     TokenType::Or if lbool => return Ok(lval),
                     _ => {}
                 }
