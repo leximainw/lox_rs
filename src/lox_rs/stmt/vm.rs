@@ -43,13 +43,13 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
             Ok(value) => {
                 if LoxValue::is_truthy(&value)
                 {
-                    stmt.stmt_true.run(self);
+                    stmt.stmt_true.run(self)
                 }
                 else if let Some(stmt) = &stmt.stmt_false
                 {
-                    stmt.run(self);
+                    stmt.run(self)
                 }
-                Ok(())
+                else { Ok(()) }
             },
             Err(err) => Err(err)
         }
