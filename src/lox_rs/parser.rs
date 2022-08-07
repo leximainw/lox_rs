@@ -160,18 +160,18 @@ impl Parser<'_>
             {
                 TokenType::LeftBrace =>
                 {
-                    let start = token.start;
                     let block = self.block_statement();
                     match block
                     {
-                        Some((stmts, end)) => Some(Box::new(BlockStmt{
+                        Some((stmts, (start, len))) => Some(Box::new(BlockStmt{
                             stmts,
                             start,
-                            len: end - start
+                            len
                         })),
                         None => None
                     }
-                }
+                },
+                TokenType::If => self.if_statement(),
                 TokenType::Print => self.print_statement(),
                 _ => self.expr_statement()
             }
@@ -179,11 +179,12 @@ impl Parser<'_>
         else { None }
     }
 
-    fn block_statement(&mut self) -> Option<(Vec<Box<dyn Stmt>>, usize)>
+    fn block_statement(&mut self) -> Option<(Vec<Box<dyn Stmt>>, (usize, usize))>
     {
         let mut stmts = Vec::new();
         if let Some(brace) = self.lexer.next()
         {
+            let start = brace.start;
             loop
             {
                 if let Some(brace) = self.lexer.peek()
@@ -194,7 +195,7 @@ impl Parser<'_>
                         {
                             let end = brace.start + 1;
                             self.lexer.next();
-                            return Some((stmts, end));
+                            return Some((stmts, (start, end - start)));
                         },
                         _ =>
                         {
@@ -243,6 +244,72 @@ impl Parser<'_>
             }
         }
         None
+    }
+
+    fn if_statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(if_token) = self.lexer.next()
+        {
+            if let Some(expr) = self.expression()
+            {
+                if let Some(block) = self.block_statement()
+                {
+                    let (stmts, (start, len)) = block;
+                    if let Some(else_token) = self.lexer.next_if(
+                        |token| token.kind == TokenType::Else)
+                    {
+                        let stmt_false: Option<Box<dyn Stmt>>
+                            = if let Some(elif_token) = self.lexer.peek_if(
+                            |token| token.kind == TokenType::If)
+                        {
+                            self.if_statement()
+                        }
+                        else if let Some(block) = self.block_statement()
+                        {
+                            let (stmts, (start, len)) = block;
+                            Some(Box::new(BlockStmt{
+                                stmts,
+                                start,
+                                len
+                            }))
+                        }
+                        else { None };
+                        if let Some(stmt_false) = stmt_false
+                        {
+                            Some(Box::new(IfStmt{
+                                expr,
+                                stmt_true: Box::new(BlockStmt{
+                                    stmts,
+                                    start,
+                                    len
+                                }),
+                                stmt_false: Some(stmt_false),
+                                start: if_token.start,
+                                len: start - if_token.start + len
+                            }))
+                        }
+                        else { None }
+                    }
+                    else
+                    {
+                        Some(Box::new(IfStmt{
+                            expr,
+                            stmt_true: Box::new(BlockStmt{
+                                stmts,
+                                start,
+                                len
+                            }),
+                            stmt_false: None,
+                            start: if_token.start,
+                            len: start - if_token.start + len
+                        }))
+                    }
+                }
+                else { None }
+            }
+            else { None }
+        }
+        else { panic!(); }
     }
 
     fn print_statement(&mut self) -> Option<Box<dyn Stmt>>

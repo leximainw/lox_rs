@@ -36,6 +36,25 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         }
     }
 
+    fn visit_ifstmt(&mut self, stmt: &IfStmt) -> Result<(), (&'static str, (usize, usize))>
+    {
+        match stmt.expr.run(self)
+        {
+            Ok(value) => {
+                if LoxValue::is_truthy(&value)
+                {
+                    stmt.stmt_true.run(self);
+                }
+                else if let Some(stmt) = &stmt.stmt_false
+                {
+                    stmt.run(self);
+                }
+                Ok(())
+            },
+            Err(err) => Err(err)
+        }
+    }
+
     fn visit_printstmt(&mut self, stmt: &PrintStmt) -> Result<(), (&'static str, (usize, usize))>
     {
         match stmt.expr.run(self)

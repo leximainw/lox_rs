@@ -124,13 +124,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         {
             TokenType::Bang => match expr.expr.run(self)
             {
-                Ok(value) => match value
-                {
-                    LoxValue::Bool(value) => Ok(LoxValue::Bool(!value)),
-                    LoxValue::Num(value) => Ok(LoxValue::Bool(value == 0.0)),
-                    LoxValue::Str(value) => Ok(LoxValue::Bool(value.len() == 0)),
-                    LoxValue::Nil => Ok(LoxValue::Bool(true))
-                },
+                Ok(value) => Ok(LoxValue::Bool(!LoxValue::is_truthy(&value))),
                 Err(err) => Err(err)
             },
             TokenType::Minus =>

@@ -58,6 +58,20 @@ pub enum TokenType
     Error, EOF
 }
 
+impl LoxValue
+{
+    pub fn is_truthy(value: &LoxValue) -> bool
+    {
+        match value
+        {
+            LoxValue::Bool(value) => *value,
+            LoxValue::Num(value) => true,
+            LoxValue::Str(value) => true,
+            LoxValue::Nil => false
+        }
+    }
+}
+
 impl std::fmt::Display for LoxValue
 {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error>

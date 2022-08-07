@@ -11,6 +11,7 @@ use super::VM;
 
 // type BlockStmt: stmts: Vec<Box<dyn Stmt>>;
 // type ExprStmt: expr: Box<dyn Expr>;
+// type IfStmt: expr: Box<dyn Expr>, stmt_true: Box<dyn Stmt>, stmt_false: Option<Box<dyn Stmt>>;
 // type PrintStmt: expr: Box<dyn Expr>;
 // type VarStmt: name: String, expr: Option<Box<dyn Expr>>;
 
@@ -28,6 +29,7 @@ trait Visitor<I>
 {
 	fn visit_blockstmt(&mut self, expr: &BlockStmt) -> I;
 	fn visit_exprstmt(&mut self, expr: &ExprStmt) -> I;
+	fn visit_ifstmt(&mut self, expr: &IfStmt) -> I;
 	fn visit_printstmt(&mut self, expr: &PrintStmt) -> I;
 	fn visit_varstmt(&mut self, expr: &VarStmt) -> I;
 }
@@ -62,6 +64,24 @@ impl Stmt for ExprStmt
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_exprstmt(self) }
+}
+
+pub struct IfStmt
+{
+	pub start: usize,
+	pub len: usize,
+	pub expr: Box<dyn Expr>,
+	pub stmt_true: Box<dyn Stmt>,
+	pub stmt_false: Option<Box<dyn Stmt>>
+}
+
+impl Stmt for IfStmt
+{
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+
+	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	{ run.visit_ifstmt(self) }
 }
 
 pub struct PrintStmt

@@ -63,6 +63,15 @@ impl<I: Iterator> NPeekable<I>
         Some(&self.view[self.cursor])
     }
 
+    pub fn peek_if(&mut self, func: impl FnOnce(&I::Item) -> bool) -> Option<&I::Item>
+    {
+        match self.peek()
+        {
+            Some(item) if func(&item) => Some(item),
+            _ => None
+        }
+    }
+
     pub fn peek_next(&mut self) -> Option<&I::Item>
     {
         self.advance_cursor();

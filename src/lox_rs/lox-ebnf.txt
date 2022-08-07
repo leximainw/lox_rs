@@ -6,9 +6,13 @@ declaration     -> varDecl
                  | statement;
 varDecl         -> "var" IDENTIFIER ("=" expression)? ";";
 
-statement       -> exprStatement
+statement       -> blockStatement
+                 | exprStatement
+                 | ifStatement
                  | printStatement;
+blockStatement  -> "{" statement* "}"
 exprStatement   -> expression ";";
+ifStatement     -> "if" expression block ("else" "if" expression block)* ("else" block)?;
 printStatement  -> "print" expression ";";
 
 expression      -> assignment;
