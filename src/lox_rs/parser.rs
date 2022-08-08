@@ -173,6 +173,7 @@ impl Parser<'_>
                 },
                 TokenType::If => self.if_statement(),
                 TokenType::Print => self.print_statement(),
+                TokenType::While => self.while_statement(),
                 _ => self.expr_statement()
             }
         }
@@ -321,24 +322,62 @@ impl Parser<'_>
                 if let Some(end) = self.lexer.next_if(
                     |token| token.kind == TokenType::Semicolon)
                 {
-                    return Some(Box::new(PrintStmt{
+                    Some(Box::new(PrintStmt{
                         expr,
                         start: print.start,
                         len: end.start - print.start + 1
-                    }));
+                    }))
                 }
                 else
                 {
                     self.errors.push("expected semicolon after print statement",
                         Severity::Error, expr.start() + expr.len(), 0, true);
+                    None
                 }
             }
             else
             {
                 self.errors.push("expected expression statement after 'print'",
                     Severity::Error, print.start + print.text.len(), 0, true);
+                None
             }
-            None
+        }
+        else { panic!(); }
+    }
+
+    fn while_statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(while_token) = self.lexer.next()
+        {
+            if let Some(expr) = self.expression()
+            {
+                if let Some(block) = self.block_statement()
+                {
+                    let (stmts, (start, len)) = block;
+                    Some(Box::new(WhileStmt{
+                        expr,
+                        stmt: Box::new(BlockStmt{
+                            stmts,
+                            start: start,
+                            len: len
+                        }),
+                        start: while_token.start,
+                        len: start - while_token.start + len
+                    }))
+                }
+                else
+                {
+                    self.errors.push("expected block after 'while' expression",
+                        Severity::Error, expr.start() + expr.len(), 0, true);
+                    None
+                }
+            }
+            else
+            {
+                self.errors.push("expected expression statement after 'while'",
+                    Severity::Error, while_token.start + while_token.text.len(), 0, true);
+                None
+            }
         }
         else { panic!(); }
     }

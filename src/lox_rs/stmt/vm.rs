@@ -84,4 +84,27 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
             Ok(())
         }
     }
+
+    fn visit_whilestmt(&mut self, stmt: &WhileStmt) -> Result<(), (&'static str, (usize, usize))>
+    {
+        loop
+        {
+            match stmt.expr.run(self)
+            {
+                Ok(value) =>
+                {
+                    if !LoxValue::is_truthy(&value)
+                    {
+                        return Ok(())
+                    }
+                    match stmt.stmt.run(self)
+                    {
+                        Err(err) => return Err(err),
+                        _ => {}
+                    }
+                },
+                Err(err) => return Err(err)
+            }
+        }
+    }
 }
