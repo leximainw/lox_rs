@@ -174,7 +174,22 @@ impl Parser<'_>
                 TokenType::If => self.if_statement(),
                 TokenType::Print => self.print_statement(),
                 TokenType::While => self.while_statement(),
-                _ => self.expr_statement()
+                _ =>
+                {
+                    let start = token.start;
+                    let len = token.text.len();
+                    if let Some(expr) = self.expr_statement()
+                    {
+                        Some(expr)
+                    }
+                    else
+                    {
+                        self.errors.push("expected statement",
+                            Severity::Error, start, len, true);
+                        self.lexer.next();
+                        None
+                    }
+                }
             }
         }
         else { None }
