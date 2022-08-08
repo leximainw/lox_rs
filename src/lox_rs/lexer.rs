@@ -29,21 +29,25 @@ impl<'a> Iterator for Lexer<'a>
 
     fn next(&mut self) -> Option<Token<'a>>
     {
-        let char = self.advance_past_whitespace();
-        match char
+        loop
         {
-            Some(c) =>
+            let char = self.advance_past_whitespace();
+            return match char
             {
-                let (kind, value) = self.read_token(c);
-                if kind == TokenType::EOF { None }
-                else { Some(Token{
-                    kind,
-                    start: self.token_start,
-                    text: Self::split_range(self.source, self.token_start, self.index),
-                    value
-                }) }
-            },
-            None => None
+                Some(c) =>
+                {
+                    let (kind, value) = self.read_token(c);
+                    if kind == TokenType::Error { continue; }
+                    if kind == TokenType::EOF { None }
+                    else { Some(Token{
+                        kind,
+                        start: self.token_start,
+                        text: Self::split_range(self.source, self.token_start, self.index),
+                        value
+                    }) }
+                },
+                None => None
+            };
         }
     }
 }
