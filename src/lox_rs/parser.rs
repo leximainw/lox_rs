@@ -26,6 +26,27 @@ enum PatternElem
     Stmt(Box<dyn Stmt>)
 }
 
+impl PatternElem
+{
+    pub fn as_type(self) -> TokenType
+    {
+        if let PatternElem::Type(kind) = self { kind }
+        else { panic!("pattern element is not a type"); }
+    }
+
+    pub fn as_expr(self) -> Box<dyn Expr>
+    {
+        if let PatternElem::Expr(expr) = self { expr }
+        else { panic!("pattern element is not an expression"); }
+    }
+
+    pub fn as_stmt(self) -> Box<dyn Stmt>
+    {
+        if let PatternElem::Stmt(stmt) = self { stmt }
+        else { panic!("pattern element is not a statement"); }
+    }
+}
+
 impl<'a> Iterator for Parser<'a>
 {
     type Item = Box<dyn Stmt>;
@@ -67,19 +88,34 @@ impl Parser<'_>
         self.lexer.unwrap().coalesce_errors(target);
     }
 
-    fn try_match(&mut self, pattern: Vec<(Box<dyn FnOnce() -> Option<PatternElem>>, &'static str)>)
+    fn try_match(&mut self, pattern: Vec<(Box<dyn FnOnce(&mut Parser) -> Option<PatternElem>>, &'static str)>)
         -> Result<Vec<PatternElem>, &'static str>
     {
         let mut exprs: Vec<PatternElem> = Vec::new();
         for (f, err) in pattern
         {
-            match f()
+            let (start, len) = if let Some(token) = self.lexer.peek()
+            { (token.start, token.text.len()) }
+            else
+            { (self.source.len(), 0) };
+            match f(self)
             {
                 Some(token) => exprs.push(token),
-                None => return Err(err)
+                None =>
+                {
+                    self.errors.push(err, Severity::Error, start, len, true);
+                    return Err(err)
+                }
             }
         }
         return Ok(exprs);
+    }
+
+    fn pattern_type(kind: Option<TokenType>) -> Option<PatternElem>
+    {
+        if let Some(kind) = kind
+        { Some(PatternElem::Type(kind)) }
+        else { None }
     }
 
     fn synchronize(&mut self)
