@@ -19,6 +19,13 @@ pub struct Parser<'a>
     errors: Errors<'a>
 }
 
+enum PatternElem
+{
+    Type(TokenType),
+    Expr(Box<dyn Expr>),
+    Stmt(Box<dyn Stmt>)
+}
+
 impl<'a> Iterator for Parser<'a>
 {
     type Item = Box<dyn Stmt>;
@@ -60,16 +67,16 @@ impl Parser<'_>
         self.lexer.unwrap().coalesce_errors(target);
     }
 
-    fn try_match(&mut self, pattern: Vec<Box<dyn FnOnce() -> Result<Option<Box<dyn Expr>>, &'static str>>>)
-        -> Result<Vec<Option<Box<dyn Expr>>>, &'static str>
+    fn try_match(&mut self, pattern: Vec<(Box<dyn FnOnce() -> Option<PatternElem>>, &'static str)>)
+        -> Result<Vec<PatternElem>, &'static str>
     {
-        let mut exprs: Vec<Option<Box<dyn Expr>>> = Vec::new();
-        for f in pattern
+        let mut exprs: Vec<PatternElem> = Vec::new();
+        for (f, err) in pattern
         {
             match f()
             {
-                Ok(expr) => exprs.push(expr),
-                Err(err) => return Err(err)
+                Some(token) => exprs.push(token),
+                None => return Err(err)
             }
         }
         return Ok(exprs);
