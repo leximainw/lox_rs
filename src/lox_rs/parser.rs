@@ -60,6 +60,21 @@ impl Parser<'_>
         self.lexer.unwrap().coalesce_errors(target);
     }
 
+    fn try_match(&mut self, pattern: Vec<Box<dyn FnOnce() -> Result<Option<Box<dyn Expr>>, &'static str>>>)
+        -> Result<Vec<Option<Box<dyn Expr>>>, &'static str>
+    {
+        let mut exprs: Vec<Option<Box<dyn Expr>>> = Vec::new();
+        for f in pattern
+        {
+            match f()
+            {
+                Ok(expr) => exprs.push(expr),
+                Err(err) => return Err(err)
+            }
+        }
+        return Ok(exprs);
+    }
+
     fn synchronize(&mut self)
     {
         self.errors.set_flag(false);
