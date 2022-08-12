@@ -23,10 +23,10 @@ pub enum LoxValue
     Nil
 }
 
-pub struct Token<'a>
+pub struct Token
 {
     pub start: usize,
-    pub text: &'a str,
+    pub text: String,
     pub kind: TokenType,
     pub value: LoxValue
 }

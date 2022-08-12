@@ -25,9 +25,9 @@ pub struct Lexer<'a>
 
 impl<'a> Iterator for Lexer<'a>
 {
-    type Item = Token<'a>;
+    type Item = Token;
 
-    fn next(&mut self) -> Option<Token<'a>>
+    fn next(&mut self) -> Option<Token>
     {
         loop
         {
@@ -42,7 +42,7 @@ impl<'a> Iterator for Lexer<'a>
                     else { Some(Token{
                         kind,
                         start: self.token_start,
-                        text: Self::split_range(self.source, self.token_start, self.index),
+                        text: Self::split_range(self.source, self.token_start, self.index).to_string(),
                         value
                     }) }
                 },

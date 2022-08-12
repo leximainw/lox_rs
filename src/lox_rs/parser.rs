@@ -9,6 +9,7 @@ use super::{
     LoxValue,
     NPeekable,
     NPeekableExt,
+    Token,
     TokenType
 };
 
@@ -21,17 +22,17 @@ pub struct Parser<'a>
 
 enum PatternElem
 {
-    Type(TokenType),
+    Token(Token),
     Expr(Box<dyn Expr>),
     Stmt(Box<dyn Stmt>)
 }
 
 impl PatternElem
 {
-    pub fn as_type(self) -> TokenType
+    pub fn as_token(self) -> Token
     {
-        if let PatternElem::Type(kind) = self { kind }
-        else { panic!("pattern element is not a type"); }
+        if let PatternElem::Token(kind) = self { kind }
+        else { panic!("pattern element is not a token"); }
     }
 
     pub fn as_expr(self) -> Box<dyn Expr>
@@ -111,13 +112,6 @@ impl Parser<'_>
         return Ok(exprs);
     }
 
-    fn pattern_type(kind: Option<TokenType>) -> Option<PatternElem>
-    {
-        if let Some(kind) = kind
-        { Some(PatternElem::Type(kind)) }
-        else { None }
-    }
-
     fn synchronize(&mut self)
     {
         self.errors.set_flag(false);
@@ -154,61 +148,57 @@ impl Parser<'_>
 
     fn var_declaration(&mut self) -> Option<Box<dyn Stmt>>
     {
-        if let Some(var) = self.lexer.next()
+        match self.try_match(vec![
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Var))),
+                "expected 'var'"),
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Identifier))),
+                "expected name after 'var'")
+        ])
         {
-            if let Some(name) = self.lexer.next_if(
-                |token| token.kind == TokenType::Identifier)
+            Err(err) => None,
+            Ok(mut parts) => if let Some(token) = self.lexer.next_if(
+                |token| token.kind == TokenType::Semicolon
+                    || token.kind == TokenType::Equal
+            )
             {
-                if let Some(token) = self.lexer.next()
+                if token.kind == TokenType::Semicolon
                 {
-                    match token.kind
+                    Some(Box::new(VarStmt{
+                        name: parts.remove(1).as_token().text,
+                        expr: None,
+                        start: pattern_start(&parts[0]),
+                        len: token.start - pattern_start(&parts[0]) + 1
+                    }))
+                }
+                else
+                {
+                    match self.try_match(vec![
+                        (Box::new(|parser| pattern_expr(parser.expression())),
+                            "expected expression after ="),
+                        (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Semicolon))),
+                            "expected ; after expression")
+                    ])
                     {
-                        TokenType::Semicolon => return Some(Box::new(VarStmt{
-                            name: name.text.to_string(),
-                            expr: None,
-                            start: var.start,
-                            len: token.start - var.start + 1
-                        })),
-                        TokenType::Equal =>
+                        Err(err) => None,
+                        Ok(mut inner_parts) =>
                         {
-                            if let Some(expr) = self.expression()
-                            {
-                                if let Some(end) = self.lexer.next_if(
-                                    |token| token.kind == TokenType::Semicolon)
-                                { return Some(Box::new(VarStmt{
-                                    name: name.text.to_string(),
-                                    expr: Some(expr),
-                                    start: var.start,
-                                    len: end.start - var.start + 1
-                                })); }
-                                else
-                                {
-                                    self.errors.push("expected ; after expression",
-                                        Severity::Error, token.start + token.text.len(), 0, true);
-                                }
-                            }
-                            else
-                            {
-                                self.errors.push("expected expression after =",
-                                    Severity::Error, token.start + token.text.len(), 0, true);
-                            }
-                        },
-                        _ =>
-                        {
-                            self.errors.push("expected = or ; after name",
-                                Severity::Error, name.start + name.text.len(), 0, true);
+                            Some(Box::new(VarStmt{
+                                name: parts.remove(1).as_token().text,
+                                expr: Some(inner_parts.remove(0).as_expr()),
+                                start: pattern_start(&parts[0]),
+                                len: pattern_end(&inner_parts[0]) - pattern_start(&parts[0])
+                            }))
                         }
                     }
                 }
             }
             else
             {
-                self.errors.push("expected name after 'var'",
-                    Severity::Error, var.start + var.text.len(), 0, true);
+                self.errors.push("expected = or ; after name",
+                    Severity::Error, 0, 0, true);
+                None
             }
-            None
         }
-        else { panic!(); }
     }
 
     fn statement(&mut self) -> Option<Box<dyn Stmt>>
@@ -919,7 +909,7 @@ impl Parser<'_>
                 TokenType::Identifier => Some(Box::new(VarGet{
                     start: token.start,
                     len: token.text.len(),
-                    name: token.text.to_string()
+                    name: token.text
                 })),
                 TokenType::LeftParen =>
                 {
@@ -965,4 +955,43 @@ impl Parser<'_>
             None
         }
     }
+}
+
+fn pattern_start(elem: &PatternElem) -> usize
+{
+    match elem
+    {
+        PatternElem::Token(token) => token.start,
+        PatternElem::Expr(expr) => expr.start(),
+        PatternElem::Stmt(stmt) => stmt.start()
+    }
+}
+
+fn pattern_len(elem: &PatternElem) -> usize
+{
+    match elem
+    {
+        PatternElem::Token(token) => token.text.len(),
+        PatternElem::Expr(expr) => expr.len(),
+        PatternElem::Stmt(stmt) => stmt.len()
+    }
+}
+
+fn pattern_end(elem: &PatternElem) -> usize
+{
+    pattern_start(elem) + pattern_len(elem)
+}
+
+fn pattern_token(token: Option<Token>) -> Option<PatternElem>
+{
+    if let Some(token) = token
+    { Some(PatternElem::Token(token)) }
+    else { None }
+}
+
+fn pattern_expr(expr: Option<Box<dyn Expr>>) -> Option<PatternElem>
+{
+    if let Some(expr) = expr
+    { Some(PatternElem::Expr(expr)) }
+    else { None }
 }
