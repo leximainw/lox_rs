@@ -8,12 +8,16 @@ varDecl         -> "var" IDENTIFIER ("=" expression)? ";";
 
 statement       -> blockStatement
                  | exprStatement
+                 | forStatement
                  | ifStatement
-                 | printStatement;
+                 | printStatement
+                 | whileStatement;
 blockStatement  -> "{" statement* "}"
 exprStatement   -> expression ";";
+forStatement    -> "for" (varDecl | exprStatement | ";") expression? ";" expression? block;
 ifStatement     -> "if" expression block ("else" "if" expression block)* ("else" block)?;
 printStatement  -> "print" expression ";";
+whileStatement  -> "while" expression block;
 
 expression      -> assignment;
 assignment      -> IDENTIFIER "=" assignment

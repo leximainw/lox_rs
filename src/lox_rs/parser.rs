@@ -6,6 +6,7 @@ use super::{
     expr::*,
     stmt::*,
     lexer::Lexer,
+    LoxValue,
     NPeekable,
     NPeekableExt,
     TokenType
@@ -171,6 +172,7 @@ impl Parser<'_>
                         None => None
                     }
                 },
+                // TokenType::For => self.for_statement(),
                 TokenType::If => self.if_statement(),
                 TokenType::Print => self.print_statement(),
                 TokenType::While => self.while_statement(),
@@ -262,6 +264,138 @@ impl Parser<'_>
         None
     }
 
+    fn for_statement(&mut self) -> Option<Box<dyn Stmt>>
+    {
+        if let Some(for_token) = self.lexer.next()
+        {
+            if let Some(init_token) = self.lexer.peek()
+            {
+                let init_token_start = init_token.start;
+                let init_token_len = init_token.text.len();
+                let init_opt = match init_token.kind
+                {
+                    TokenType::Semicolon => None,
+                    TokenType::Var => self.var_declaration(),
+                    _ => self.expr_statement()
+                };
+                if self.errors.get_flag()
+                {
+                    return None;
+                }
+                let init = if let Some(x) = init_opt { x } else { Box::new(ExprStmt{
+                    expr: Box::new(Literal{
+                        value: LoxValue::Bool(true),
+                        start: init_token_start,
+                        len: 0
+                    }),
+                    start: init_token_start,
+                    len: 0
+                })};
+                if let Some(cond_end) = self.lexer.peek()
+                {
+                    let cond_end_start = cond_end.start;
+                    let cond_end_len = cond_end.text.len();
+                    let cond = if cond_end.kind == TokenType::Semicolon
+                    {
+                        Box::new(Literal{
+                            value: LoxValue::Bool(true),
+                            start: cond_end.start,
+                            len: 0
+                        })
+                    }
+                    else if let Some(x) = self.expression()
+                    {
+                        x
+                    }
+                    else
+                    {
+                        self.errors.push("expected condition after initializer",
+                            Severity::Error, init_token_start + init_token_len, 0, true);
+                        return None;
+                    };
+                    if let Some(block_start) = self.lexer.peek()
+                    {
+                        let block_start_start = block_start.start;
+                        let block_start_len = block_start.text.len();
+                        let update = if block_start.kind == TokenType::LeftBrace
+                        {
+                            Box::new(Literal{
+                                value: LoxValue::Bool(true),
+                                start: block_start.start,
+                                len: 0
+                            })
+                        }
+                        else if let Some(x) = self.expression()
+                        {
+                            x
+                        }
+                        else
+                        {
+                            self.errors.push("expected update expression after condition",
+                                Severity::Error, cond_end_start + cond_end_len, 0, true);
+                            return None;
+                        };
+                        let update_start = update.start();
+                        let update_len = update.len();
+                        if let Some(stmts) = self.block_statement()
+                        {
+                            let (block, (block_start, block_len)) = stmts;
+                            let start = for_token.start;
+                            let len = block_start - for_token.start + block_len;
+                            Some(Box::new(BlockStmt{
+                                stmts: vec![
+                                    init,
+                                    Box::new(WhileStmt{
+                                        expr: cond,
+                                        stmt: Box::new(BlockStmt{
+                                            stmts: block,
+                                            start: block_start,
+                                            len: block_len
+                                        }),
+                                        start,
+                                        len
+                                    }),
+                                    Box::new(ExprStmt{
+                                        expr: update,
+                                        start: update_start,
+                                        len: update_len
+                                    })
+                                ],
+                                start,
+                                len
+                            }))
+                        }
+                        else
+                        {
+                            self.errors.push("expected for block",
+                                Severity::Error, block_start_start + block_start_len, 0, true);
+                            None
+                        }
+                    }
+                    else
+                    {
+                        self.errors.push("expected update expression after condition",
+                            Severity::Error, cond_end_start + cond_end_len, 0, true);
+                        None
+                    }
+                }
+                else
+                {
+                    self.errors.push("expected condition after initializer",
+                        Severity::Error, init_token_start + init_token_len, 0, true);
+                    None
+                }
+            }
+            else
+            {
+                self.errors.push("expected initializer after 'for'",
+                    Severity::Error, for_token.start + for_token.text.len(), 0, true);
+                None
+            }
+        }
+        else { panic!(); }
+    }
+
     fn if_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
         if let Some(if_token) = self.lexer.next()
@@ -289,7 +423,12 @@ impl Parser<'_>
                                 len
                             }))
                         }
-                        else { None };
+                        else
+                        {
+                            self.errors.push("expected 'if' or block after 'else'",
+                                Severity::Error, else_token.start + else_token.text.len(), 0, true);
+                            None
+                        };
                         if let Some(stmt_false) = stmt_false
                         {
                             Some(Box::new(IfStmt{
@@ -304,7 +443,12 @@ impl Parser<'_>
                                 len: start - if_token.start + len
                             }))
                         }
-                        else { None }
+                        else
+                        {
+                            self.errors.push("expected valid 'else if' statement",
+                                Severity::Error, else_token.start + else_token.text.len(), 0, true);
+                            None
+                        }
                     }
                     else
                     {
@@ -321,9 +465,19 @@ impl Parser<'_>
                         }))
                     }
                 }
-                else { None }
+                else
+                {
+                    self.errors.push("expected block after if statement",
+                        Severity::Error, expr.start() + expr.len(), 0, true);
+                    None
+                }
             }
-            else { None }
+            else
+            {
+                self.errors.push("expected predicate after 'if'",
+                    Severity::Error, if_token.start + if_token.text.len(), 0, true);
+                None
+            }
         }
         else { panic!(); }
     }
