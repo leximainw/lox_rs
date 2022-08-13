@@ -466,34 +466,26 @@ impl Parser<'_>
 
     fn while_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        if let Some(while_token) = self.lexer.next()
+        match self.try_match(vec![
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::While))),
+                (true, "expected 'while'")),
+            (Box::new(|parser| pattern_expr(parser.expression())),
+                (false, "expected condition after 'while'")),
+            (Box::new(|parser| pattern_stmt(parser.block_statement())),
+                (false, "expected block after while statement"))
+        ])
         {
-            if let Some(expr) = self.expression()
+            Err(_) => None,
+            Ok(mut parts) =>
             {
-                if let Some(block) = self.block_statement()
-                {
-                    Some(Box::new(WhileStmt{
-                        start: while_token.start,
-                        len: block.start() - while_token.start + block.len(),
-                        expr,
-                        stmt: block
-                    }))
-                }
-                else
-                {
-                    self.errors.push("expected block after 'while' expression",
-                        Severity::Error, expr.start() + expr.len(), 0, true);
-                    None
-                }
-            }
-            else
-            {
-                self.errors.push("expected expression statement after 'while'",
-                    Severity::Error, while_token.start + while_token.text.len(), 0, true);
-                None
+                Some(Box::new(WhileStmt{
+                    start: pattern_start(&parts[0]),
+                    len: pattern_end(&parts[2]) - pattern_start(&parts[0]),
+                    expr: parts.remove(1).as_expr(),
+                    stmt: parts.remove(1).as_stmt()
+                }))
             }
         }
-        else { panic!(); }
     }
 
     fn expression(&mut self) -> Option<Box<dyn Expr>>
