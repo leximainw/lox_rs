@@ -89,10 +89,13 @@ impl Parser<'_>
         self.lexer.unwrap().coalesce_errors(target);
     }
 
-    fn try_match(&mut self, pattern: Vec<(Box<dyn FnOnce(&mut Parser) -> Option<PatternElem>>, &'static str)>)
+    fn try_match(&mut self, pattern: Vec<(Box<dyn FnOnce(&mut Parser) -> Option<PatternElem>>, (bool, &'static str))>)
         -> Result<Vec<PatternElem>, &'static str>
     {
-        let mut exprs: Vec<PatternElem> = Vec::new();
+        let mut curr_end = if let Some(token) = self.lexer.peek()
+        { token.start + token.text.len() }
+        else { self.source.len() };
+        let mut elems: Vec<PatternElem> = Vec::new();
         for (f, err) in pattern
         {
             let (start, len) = if let Some(token) = self.lexer.peek()
@@ -101,15 +104,21 @@ impl Parser<'_>
             { (self.source.len(), 0) };
             match f(self)
             {
-                Some(token) => exprs.push(token),
+                Some(elem) =>
+                {
+                    curr_end = pattern_end(&elem);
+                    elems.push(elem);
+                }
                 None =>
                 {
-                    self.errors.push(err, Severity::Error, start, len, true);
-                    return Err(err)
+                    let (nz_len, err) = err;
+                    if nz_len { self.errors.push(err, Severity::Error, start, len, true); }
+                    else { self.errors.push(err, Severity::Error, curr_end, 0, true); }
+                    return Err(err);
                 }
             }
         }
-        return Ok(exprs);
+        return Ok(elems);
     }
 
     fn synchronize(&mut self)
@@ -196,9 +205,9 @@ impl Parser<'_>
     {
         match self.try_match(vec![
             (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Var))),
-                "expected 'var'"),
+                (true, "expected 'var'")),
             (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Identifier))),
-                "expected name after 'var'")
+                (false, "expected name after 'var'"))
         ])
         {
             Err(err) => None,
@@ -220,9 +229,9 @@ impl Parser<'_>
                 {
                     match self.try_match(vec![
                         (Box::new(|parser| pattern_expr(parser.expression())),
-                            "expected expression after ="),
+                            (false, "expected expression after =")),
                         (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Semicolon))),
-                            "expected ; after expression")
+                            (false, "expected ; after expression"))
                     ])
                     {
                         Err(err) => None,
@@ -297,9 +306,9 @@ impl Parser<'_>
     {
         match self.try_match(vec![
             (Box::new(|parser| pattern_expr(parser.expression())),
-                "expected expression"),
+                (true, "expected expression")),
             (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Semicolon))),
-                "expected ; after expression statement")
+                (false, "expected ; after expression statement"))
         ])
         {
             Err(err) => None,
@@ -318,7 +327,7 @@ impl Parser<'_>
     {
         match self.try_match(vec![
             (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::For))),
-                "expected 'for'"),
+                (true, "expected 'for'")),
             (Box::new(|parser| pattern_stmt(if let Some(token) = parser.lexer.peek()
             {
                 match token.kind
@@ -328,7 +337,7 @@ impl Parser<'_>
                     _ => parser.expr_statement()
                 }
             } else { None })),
-                "expected semicolon, 'var', or expression after 'for'"),
+                (false, "expected semicolon, 'var', or expression after 'for'")),
             (Box::new(|parser| pattern_stmt(if let Some(token) = parser.lexer.peek()
             {
                 match token.kind
@@ -337,7 +346,7 @@ impl Parser<'_>
                     _ => parser.expr_statement()
                 }
             } else { None })),
-                "expected semicolon or expression after initializer"),
+                (false, "expected semicolon or expression after initializer")),
             (Box::new(|parser| pattern_expr(if let Some(token) = parser.lexer.peek()
             {
                 match token.kind
@@ -346,7 +355,7 @@ impl Parser<'_>
                     _ => parser.expression()
                 }
             } else { None })),
-                "expected left brace or expression after condition"),
+                (false, "expected left brace or expression after condition")),
             (Box::new(|parser| pattern_expr(if let Some(token) = parser.lexer.peek_if(|token| token.kind == TokenType::LeftBrace)
             {
                 match token.kind
@@ -355,9 +364,9 @@ impl Parser<'_>
                     _ => None
                 }
             } else { None })),
-                "expected left brace after update expression"),
+                (false, "expected left brace after update expression")),
             (Box::new(|parser| pattern_stmt(parser.block_statement())),
-                "expected block after for statement")
+                (false, "expected block after for statement"))
         ])
         {
             Err(err) => None,
