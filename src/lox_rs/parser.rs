@@ -357,7 +357,7 @@ impl Parser<'_>
             } else { None })),
                 (false, "expected left brace or expression after condition")),
             (Box::new(|parser| pattern_stmt(parser.block_statement())),
-                (false, "expected block after update expression"))
+                (false, "expected block after for statement"))
         ])
         {
             Err(_) => None,
@@ -395,74 +395,50 @@ impl Parser<'_>
 
     fn if_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        if let Some(if_token) = self.lexer.next()
+        match self.try_match(vec![
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::If))),
+                (true, "expected 'if'")),
+            (Box::new(|parser| pattern_expr(parser.expression())),
+                (false, "expected predicate after 'if'")),
+            (Box::new(|parser| pattern_stmt(parser.block_statement())),
+                (false, "expected block after if statement")),
+        ])
         {
-            if let Some(expr) = self.expression()
+            Err(_) => None,
+            Ok(mut parts) =>
             {
-                if let Some(block) = self.block_statement()
+                match if let Some(_) = self.lexer.peek_if(
+                    |token| token.kind == TokenType::Else
+                )
                 {
-                    if let Some(else_token) = self.lexer.next_if(
-                        |token| token.kind == TokenType::Else)
+                    match self.try_match(vec![
+                        (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Else))),
+                            (true, "expected 'else'")),   // this error should never happen
+                        (Box::new(|parser| pattern_stmt(if let Some(_) = parser.lexer.peek_if(
+                            |token| token.kind == TokenType::If
+                        )
+                        { parser.if_statement() }
+                        else { parser.block_statement() })),
+                            (false, "expected 'if' or block after else statement"))
+                    ])
                     {
-                        let stmt_false: Option<Box<dyn Stmt>>
-                            = if let Some(_) = self.lexer.peek_if(
-                            |token| token.kind == TokenType::If)
-                        {
-                            self.if_statement()
-                        }
-                        else if let Some(block) = self.block_statement()
-                        {
-                            Some(block)
-                        }
-                        else
-                        {
-                            self.errors.push("expected 'if' or block after 'else'",
-                                Severity::Error, else_token.start + else_token.text.len(), 0, true);
-                            None
-                        };
-                        if let Some(stmt_false) = stmt_false
-                        {
-                            Some(Box::new(IfStmt{
-                                start: if_token.start,
-                                len: block.start() - if_token.start + block.len(),
-                                expr,
-                                stmt_true: block,
-                                stmt_false: Some(stmt_false)
-                            }))
-                        }
-                        else
-                        {
-                            self.errors.push("expected valid 'else if' statement",
-                                Severity::Error, else_token.start + else_token.text.len(), 0, true);
-                            None
-                        }
-                    }
-                    else
-                    {
-                        Some(Box::new(IfStmt{
-                            start: if_token.start,
-                            len: block.start() - if_token.start + block.len(),
-                            expr,
-                            stmt_true: block,
-                            stmt_false: None
-                        }))
+                        Err(_) => Err(()),
+                        Ok(mut parts) => Ok((pattern_end(&parts[1]), Some(parts.remove(1).as_stmt())))
                     }
                 }
-                else
+                else { Ok((pattern_end(&parts[2]), None)) }
                 {
-                    self.errors.push("expected block after if statement",
-                        Severity::Error, expr.start() + expr.len(), 0, true);
-                    None
+                    Err(()) => None,
+                    Ok((end, stmt_false)) => Some(Box::new(IfStmt{
+                        start: pattern_start(&parts[0]),
+                        len: end - pattern_start(&parts[0]),
+                        expr: parts.remove(1).as_expr(),
+                        stmt_true: parts.remove(1).as_stmt(),
+                        stmt_false
+                    }))
                 }
-            }
-            else
-            {
-                self.errors.push("expected predicate after 'if'",
-                    Severity::Error, if_token.start + if_token.text.len(), 0, true);
-                None
             }
         }
-        else { panic!(); }
     }
 
     fn print_statement(&mut self) -> Option<Box<dyn Stmt>>
