@@ -467,34 +467,25 @@ impl Parser<'_>
 
     fn print_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        if let Some(print) = self.lexer.next()
+        match self.try_match(vec![
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Print))),
+                (true, "expected 'print'")),
+            (Box::new(|parser| pattern_expr(parser.expression())),
+                (false, "expected expression after 'print'")),
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Semicolon))),
+                (false, "expected semicolon after print statement"))
+        ])
         {
-            if let Some(expr) = self.expression()
+            Err(_) => None,
+            Ok(mut parts) =>
             {
-                if let Some(end) = self.lexer.next_if(
-                    |token| token.kind == TokenType::Semicolon)
-                {
-                    Some(Box::new(PrintStmt{
-                        expr,
-                        start: print.start,
-                        len: end.start - print.start + 1
-                    }))
-                }
-                else
-                {
-                    self.errors.push("expected semicolon after print statement",
-                        Severity::Error, expr.start() + expr.len(), 0, true);
-                    None
-                }
-            }
-            else
-            {
-                self.errors.push("expected expression statement after 'print'",
-                    Severity::Error, print.start + print.text.len(), 0, true);
-                None
+                Some(Box::new(PrintStmt{
+                    expr: parts.remove(1).as_expr(),
+                    start: pattern_start(&parts[0]),
+                    len: pattern_end(&parts[1]) - pattern_start(&parts[0])
+                }))
             }
         }
-        else { panic!(); }
     }
 
     fn while_statement(&mut self) -> Option<Box<dyn Stmt>>
