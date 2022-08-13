@@ -133,6 +133,52 @@ impl Parser<'_>
         }
     }
 
+    fn block(&mut self) -> Option<(Vec<Box<dyn Stmt>>, (usize, usize))>
+    {
+        let mut stmts = Vec::new();
+        if let Some(brace) = self.lexer.next_if(
+            |token| token.kind == TokenType::LeftBrace
+        )
+        {
+            let start = brace.start;
+            loop
+            {
+                if let Some(brace) = self.lexer.peek()
+                {
+                    match brace.kind
+                    {
+                        TokenType::RightBrace =>
+                        {
+                            let end = brace.start + 1;
+                            self.lexer.next();
+                            return Some((stmts, (start, end - start)));
+                        },
+                        _ =>
+                        {
+                            if let Some(stmt) = self.declaration()
+                            { stmts.push(stmt); }
+                            else { return None; }
+                        }
+                    }
+                }
+                else if stmts.len() != 0
+                {
+                    let last_stmt = &stmts[stmts.len() - 1];
+                    self.errors.push("expected closing brace after block",
+                        Severity::Error, last_stmt.start() + last_stmt.len(), 0, true);
+                    return None;
+                }
+                else
+                {
+                    self.errors.push("expected closing brace after block",
+                        Severity::Error, brace.start + 1, 0, true);
+                    return None;
+                }
+            }
+        }
+        else { None }
+    }
+
     fn declaration(&mut self) -> Option<Box<dyn Stmt>>
     {
         if let Some(token) = self.lexer.peek()
@@ -207,20 +253,8 @@ impl Parser<'_>
         {
             match token.kind
             {
-                TokenType::LeftBrace =>
-                {
-                    let block = self.block_statement();
-                    match block
-                    {
-                        Some((stmts, (start, len))) => Some(Box::new(BlockStmt{
-                            stmts,
-                            start,
-                            len
-                        })),
-                        None => None
-                    }
-                },
-                // TokenType::For => self.for_statement(),
+                TokenType::LeftBrace => self.block_statement(),
+                TokenType::For => self.for_statement(),
                 TokenType::If => self.if_statement(),
                 TokenType::Print => self.print_statement(),
                 TokenType::While => self.while_statement(),
@@ -245,48 +279,18 @@ impl Parser<'_>
         else { None }
     }
 
-    fn block_statement(&mut self) -> Option<(Vec<Box<dyn Stmt>>, (usize, usize))>
+    fn block_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        let mut stmts = Vec::new();
-        if let Some(brace) = self.lexer.next()
+        if let Some(block) = self.block()
         {
-            let start = brace.start;
-            loop
-            {
-                if let Some(brace) = self.lexer.peek()
-                {
-                    match brace.kind
-                    {
-                        TokenType::RightBrace =>
-                        {
-                            let end = brace.start + 1;
-                            self.lexer.next();
-                            return Some((stmts, (start, end - start)));
-                        },
-                        _ =>
-                        {
-                            if let Some(stmt) = self.declaration()
-                            { stmts.push(stmt); }
-                            else { return None; }
-                        }
-                    }
-                }
-                else if stmts.len() != 0
-                {
-                    let last_stmt = &stmts[stmts.len() - 1];
-                    self.errors.push("expected closing brace after block",
-                        Severity::Error, last_stmt.start() + last_stmt.len(), 0, true);
-                    return None;
-                }
-                else
-                {
-                    self.errors.push("expected closing brace after block",
-                        Severity::Error, brace.start + 1, 0, true);
-                    return None;
-                }
-            }
+            let (stmts, (start, len)) = block;
+            Some(Box::new(BlockStmt{
+                stmts,
+                start,
+                len
+            }))
         }
-        else { panic!(); }
+        else { None }
     }
 
     fn expr_statement(&mut self) -> Option<Box<dyn Stmt>>
@@ -352,10 +356,7 @@ impl Parser<'_>
                 }
             } else { None })),
                 "expected left brace after update expression"),
-            (Box::new(|parser| pattern_stmt(if let Some(block) = parser.block_statement()
-            {
-                todo!("got for block");
-            } else { None })),
+            (Box::new(|parser| pattern_stmt(parser.block_statement())),
                 "expected block after for statement")
         ])
         {
@@ -375,7 +376,6 @@ impl Parser<'_>
             {
                 if let Some(block) = self.block_statement()
                 {
-                    let (stmts, (start, len)) = block;
                     if let Some(else_token) = self.lexer.next_if(
                         |token| token.kind == TokenType::Else)
                     {
@@ -387,12 +387,7 @@ impl Parser<'_>
                         }
                         else if let Some(block) = self.block_statement()
                         {
-                            let (stmts, (start, len)) = block;
-                            Some(Box::new(BlockStmt{
-                                stmts,
-                                start,
-                                len
-                            }))
+                            Some(block)
                         }
                         else
                         {
@@ -403,15 +398,11 @@ impl Parser<'_>
                         if let Some(stmt_false) = stmt_false
                         {
                             Some(Box::new(IfStmt{
-                                expr,
-                                stmt_true: Box::new(BlockStmt{
-                                    stmts,
-                                    start,
-                                    len
-                                }),
-                                stmt_false: Some(stmt_false),
                                 start: if_token.start,
-                                len: start - if_token.start + len
+                                len: block.start() - if_token.start + block.len(),
+                                expr,
+                                stmt_true: block,
+                                stmt_false: Some(stmt_false)
                             }))
                         }
                         else
@@ -424,15 +415,11 @@ impl Parser<'_>
                     else
                     {
                         Some(Box::new(IfStmt{
-                            expr,
-                            stmt_true: Box::new(BlockStmt{
-                                stmts,
-                                start,
-                                len
-                            }),
-                            stmt_false: None,
                             start: if_token.start,
-                            len: start - if_token.start + len
+                            len: block.start() - if_token.start + block.len(),
+                            expr,
+                            stmt_true: block,
+                            stmt_false: None
                         }))
                     }
                 }
@@ -493,16 +480,11 @@ impl Parser<'_>
             {
                 if let Some(block) = self.block_statement()
                 {
-                    let (stmts, (start, len)) = block;
                     Some(Box::new(WhileStmt{
-                        expr,
-                        stmt: Box::new(BlockStmt{
-                            stmts,
-                            start: start,
-                            len: len
-                        }),
                         start: while_token.start,
-                        len: start - while_token.start + len
+                        len: block.start() - while_token.start + block.len(),
+                        expr,
+                        stmt: block
                     }))
                 }
                 else
