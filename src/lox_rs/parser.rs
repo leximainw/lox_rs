@@ -291,25 +291,23 @@ impl Parser<'_>
 
     fn expr_statement(&mut self) -> Option<Box<dyn Stmt>>
     {
-        if let Some(expr) = self.expression()
+        match self.try_match(vec![
+            (Box::new(|parser| pattern_expr(parser.expression())),
+                "expected expression"),
+            (Box::new(|parser| pattern_token(parser.lexer.next_if(|token| token.kind == TokenType::Semicolon))),
+                "expected ; after expression statement")
+        ])
         {
-            if let Some(end) = self.lexer.next_if(
-                |token| token.kind == TokenType::Semicolon)
+            Err(err) => None,
+            Ok(mut parts) =>
             {
-                let start = expr.start();
-                return Some(Box::new(ExprStmt{
-                    expr,
-                    start: start,
-                    len: end.start - start + 1
-                }));
-            }
-            else
-            {
-                self.errors.push("expected semicolon after expression statement",
-                    Severity::Error, expr.start() + expr.len(), 0, true);
+                Some(Box::new(ExprStmt{
+                    start: pattern_start(&parts[0]),
+                    len: pattern_end(&parts[1]) - pattern_start(&parts[0]),
+                    expr: parts.remove(0).as_expr()
+                }))
             }
         }
-        None
     }
 
     fn for_statement(&mut self) -> Option<Box<dyn Stmt>>
