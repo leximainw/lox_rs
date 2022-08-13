@@ -30,7 +30,8 @@ fn generate_ast(mut slice: &str) -> String
     const MAIN_TRAIT: &str = "\npub trait MAIN\n{\n\tMETHODS\n}\n";
     const MAIN_ATTR: &str = "\tpub NAME: TYPE;\n";
     const ATTR_DECL: &str = "\tfn NAME(&self) -> TYPE;\n";
-    const CAST_DECL: &str = "\tfn as_TYPEL(&self) -> Option<&TYPE>;\n";
+    const CAST_DECL: &str = "\tfn to_TYPEL(self: Box<Self>) -> Option<TYPE>;\n";
+    const REF_CAST_DECL: &str = "\tfn as_TYPEL(&self) -> Option<&TYPE>;\n";
     const MAIN_VISIT: &str = "\tfn VERB(&self, VERB: &mut TYPE) -> RETURNS;\n";
     const MAIN_VISIT_BODY: &str = "\n\t{ VERB.visit_TYPEL(self) }";
     const VISIT_TRAIT: &str = "\ntrait Visitor<I>\n{\nMETHODS}\n";
@@ -44,6 +45,7 @@ fn generate_ast(mut slice: &str) -> String
     let mut visitors: Vec<(&str, &str, &str)> = Vec::new();
     let mut attrs: Vec<(&str, &str)> = Vec::new();
     let mut casts: Vec<&str> = Vec::new();
+    let mut ref_casts: Vec<&str> = Vec::new();
     let mut type_fields: Vec<(&str, &str)> = Vec::new();
 
     let main_type = if let Some(index) = slice.find("// trait:")
@@ -123,7 +125,10 @@ fn generate_ast(mut slice: &str) -> String
             if let Some(end) = slice[index..]
                 .find(";").map(|i| i + index)
             {
-                casts.push(&slice[index + 8 .. end].trim());
+                let cast = &slice[index + 8 .. end].trim();
+                if cast.is_char_boundary(1) && &cast[..1] == "&"
+                { ref_casts.push(cast[1..].trim()); }
+                else { casts.push(cast); }
                 pos = index + 1
             }
             else { break }
@@ -184,10 +189,17 @@ fn generate_ast(mut slice: &str) -> String
             .replace("TYPEL", kindl)
             .replace("TYPE", kind)
     }).collect::<Vec<String>>().join("");
+    let ref_cast_decl = &ref_casts.iter().map(|kind| {
+        let kindl = &kind.to_lowercase();
+        REF_CAST_DECL.to_string()
+            .replace("TYPEL", kindl)
+            .replace("TYPE", kind)
+    }).collect::<Vec<String>>().join("").to_string();
     if attrs.len() != 0
     {
         main_methods.push_str(attr_decl);
         main_methods.push_str(cast_decl);
+        main_methods.push_str(ref_cast_decl);
         main_methods.push_str("\n");
     }
     if visitors.len() != 0
@@ -236,6 +248,14 @@ fn generate_ast(mut slice: &str) -> String
         body.push_str(&casts.iter().map(|cast_kind| {
             let cast_kindl = &cast_kind.to_lowercase();
             CAST_DECL.to_string()
+                .replace("TYPEL", cast_kindl)
+                .replace("TYPE", cast_kind)
+                .replace(";", if kind != cast_kind { " { None }" }
+                    else { " { Some(*self) }" })
+        }).collect::<Vec<String>>().join(""));
+        body.push_str(&ref_casts.iter().map(|cast_kind| {
+            let cast_kindl = &cast_kind.to_lowercase();
+            REF_CAST_DECL.to_string()
                 .replace("TYPEL", cast_kindl)
                 .replace("TYPE", cast_kind)
                 .replace(";", if kind != cast_kind { " { None }" }

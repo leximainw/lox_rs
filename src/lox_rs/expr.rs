@@ -15,7 +15,7 @@ use super::VM;
 // trait: Expr;
 // attr start: usize;
 // attr len: usize;
-// cast: VarGet;
+// cast: &VarGet;
 
 // type Binary: left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>;
 // type Grouping: expr: Box<dyn Expr>;

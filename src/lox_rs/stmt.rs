@@ -8,6 +8,7 @@ use super::VM;
 // trait: Stmt;
 // attr start: usize;
 // attr len: usize;
+// cast: ExprStmt;
 
 // type BlockStmt: stmts: Vec<Box<dyn Stmt>>;
 // type ExprStmt: expr: Box<dyn Expr>;
@@ -22,6 +23,7 @@ pub trait Stmt
 {
 	fn start(&self) -> usize;
 	fn len(&self) -> usize;
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt>;
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>;
 }
@@ -47,6 +49,7 @@ impl Stmt for BlockStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_blockstmt(self) }
@@ -63,6 +66,7 @@ impl Stmt for ExprStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { Some(*self) }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_exprstmt(self) }
@@ -81,6 +85,7 @@ impl Stmt for IfStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_ifstmt(self) }
@@ -97,6 +102,7 @@ impl Stmt for PrintStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_printstmt(self) }
@@ -114,6 +120,7 @@ impl Stmt for VarStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_varstmt(self) }
@@ -131,6 +138,7 @@ impl Stmt for WhileStmt
 {
 	fn start(&self) -> usize { self.start }
 	fn len(&self) -> usize { self.len }
+	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
 	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
 	{ run.visit_whilestmt(self) }

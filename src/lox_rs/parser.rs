@@ -356,23 +356,39 @@ impl Parser<'_>
                 }
             } else { None })),
                 (false, "expected left brace or expression after condition")),
-            (Box::new(|parser| pattern_expr(if let Some(token) = parser.lexer.peek_if(|token| token.kind == TokenType::LeftBrace)
-            {
-                match token.kind
-                {
-                    TokenType::LeftBrace => Some(Self::true_expr()),
-                    _ => None
-                }
-            } else { None })),
-                (false, "expected left brace after update expression")),
             (Box::new(|parser| pattern_stmt(parser.block_statement())),
-                (false, "expected block after for statement"))
+                (false, "expected block after update expression"))
         ])
         {
             Err(err) => None,
-            Ok(parts) =>
+            Ok(mut parts) =>
             {
-                todo!("got parts");
+                let start = pattern_start(&parts[0]);
+                let len = pattern_end(&parts[4]) - start;
+                Some(Box::new(BlockStmt{
+                    stmts: vec![
+                        parts.remove(1).as_stmt(),
+                        Box::new(WhileStmt{
+                            expr: parts.remove(1).as_stmt().to_exprstmt().unwrap().expr,
+                            stmt: Box::new(BlockStmt{
+                                stmts: vec![
+                                    parts.remove(2).as_stmt(),
+                                    Box::new(ExprStmt{
+                                        expr: parts.remove(1).as_expr(),
+                                        start,
+                                        len
+                                    }),
+                                ],
+                                start,
+                                len
+                            }),
+                            start,
+                            len
+                        })
+                    ],
+                    start,
+                    len
+                }))
             }
         }
     }
