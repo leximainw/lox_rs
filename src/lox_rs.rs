@@ -65,8 +65,8 @@ impl LoxValue
         match value
         {
             LoxValue::Bool(value) => *value,
-            LoxValue::Num(value) => true,
-            LoxValue::Str(value) => true,
+            LoxValue::Num(_) => true,
+            LoxValue::Str(_) => true,
             LoxValue::Nil => false
         }
     }

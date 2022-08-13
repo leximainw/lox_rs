@@ -210,7 +210,7 @@ impl Parser<'_>
                 (false, "expected name after 'var'"))
         ])
         {
-            Err(err) => None,
+            Err(_) => None,
             Ok(mut parts) => if let Some(token) = self.lexer.next_if(
                 |token| token.kind == TokenType::Semicolon
                     || token.kind == TokenType::Equal
@@ -234,7 +234,7 @@ impl Parser<'_>
                             (false, "expected ; after expression"))
                     ])
                     {
-                        Err(err) => None,
+                        Err(_) => None,
                         Ok(mut inner_parts) =>
                         {
                             Some(Box::new(VarStmt{
@@ -311,7 +311,7 @@ impl Parser<'_>
                 (false, "expected ; after expression statement"))
         ])
         {
-            Err(err) => None,
+            Err(_) => None,
             Ok(mut parts) =>
             {
                 Some(Box::new(ExprStmt{
@@ -360,7 +360,7 @@ impl Parser<'_>
                 (false, "expected block after update expression"))
         ])
         {
-            Err(err) => None,
+            Err(_) => None,
             Ok(mut parts) =>
             {
                 let start = pattern_start(&parts[0]);
@@ -405,7 +405,7 @@ impl Parser<'_>
                         |token| token.kind == TokenType::Else)
                     {
                         let stmt_false: Option<Box<dyn Stmt>>
-                            = if let Some(elif_token) = self.lexer.peek_if(
+                            = if let Some(_) = self.lexer.peek_if(
                             |token| token.kind == TokenType::If)
                         {
                             self.if_statement()
