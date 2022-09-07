@@ -25,6 +25,14 @@ impl Visitor<String> for AstPrinter
 			expr.right.print(self))
 	}
 
+	fn visit_call(&mut self, expr: &Call) -> String
+	{
+		format!("(call {} {})",
+			expr.callee.print(self),
+			expr.args.iter().map(|x| x.print(self))
+				.collect::<Vec<String>>().join(" "))
+	}
+
 	fn visit_grouping(&mut self, expr: &Grouping) -> String
 	{
 		format!("(group {})", expr.expr.print(self))

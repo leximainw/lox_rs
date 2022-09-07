@@ -18,6 +18,7 @@ use super::VM;
 // cast: &VarGet;
 
 // type Binary: left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>;
+// type Call: callee: Box<dyn Expr>, args: Vec<Box<dyn Expr>>;
 // type Grouping: expr: Box<dyn Expr>;
 // type Literal: value: LoxValue;
 // type Logical: left: Box<dyn Expr>, oper: TokenType, right: Box<dyn Expr>;
@@ -40,6 +41,7 @@ pub trait Expr
 trait Visitor<I>
 {
 	fn visit_binary(&mut self, expr: &Binary) -> I;
+	fn visit_call(&mut self, expr: &Call) -> I;
 	fn visit_grouping(&mut self, expr: &Grouping) -> I;
 	fn visit_literal(&mut self, expr: &Literal) -> I;
 	fn visit_logical(&mut self, expr: &Logical) -> I;
@@ -67,6 +69,26 @@ impl Expr for Binary
 	{ print.visit_binary(self) }
 	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
 	{ run.visit_binary(self) }
+}
+
+pub struct Call
+{
+	pub start: usize,
+	pub len: usize,
+	pub callee: Box<dyn Expr>,
+	pub args: Vec<Box<dyn Expr>>
+}
+
+impl Expr for Call
+{
+	fn start(&self) -> usize { self.start }
+	fn len(&self) -> usize { self.len }
+	fn as_varget(&self) -> Option<&VarGet> { None }
+
+	fn print(&self, print: &mut AstPrinter) -> String
+	{ print.visit_call(self) }
+	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	{ run.visit_call(self) }
 }
 
 pub struct Grouping

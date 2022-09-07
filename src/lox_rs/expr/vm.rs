@@ -102,6 +102,11 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
+    fn visit_call(&mut self, expr: &Call) -> Result<LoxValue, (&'static str, (usize, usize))>
+    {
+        todo!();
+    }
+
     fn visit_grouping(&mut self, expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
         expr.expr.run(self)

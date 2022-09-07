@@ -28,9 +28,11 @@ equality        -> comparison (("==" | "!=") comparison)*;
 comparison      -> term (("<" | "<=" | ">" | ">=") term)*;
 term            -> factor (("+" | "-") factor)*;
 factor          -> unary (("*" | "/" | "%") unary)*;
-unary           -> ("!" | "-") unary | primary;
+unary           -> ("!" | "-") unary | call;
+call            -> primary ("(" arguments? ")")*;
 primary         -> "(" primary ")" | value | IDENTIFIER;
 
+arguments       -> expression ("," expression)*
 value           -> STRING | NUMBER | BOOL | NIL;
 
 IDENTIFIER      -> /[A-Za-z_][A-Za-z0-9_]*/

@@ -776,7 +776,64 @@ impl Parser<'_>
                 None
             }
         }
-        else { self.primary() }
+        else { self.call() }
+    }
+
+    fn call(&mut self) -> Option<Box<dyn Expr>>
+    {
+        if let Some(primary) = self.primary() {
+            if let Some(token) = self.lexer.next_if(|token| {
+                match token.kind {
+                    TokenType::LeftParen => true,
+                    _ => false
+                }
+            }) {
+                let mut args = Vec::new();
+                println!("{}", self.lexer.peek().unwrap().text);
+                loop {
+                    if let Some(token) = self.lexer.next_if(|token| {
+                        match token.kind {
+                            TokenType::RightParen => true,
+                            _ => false
+                        }
+                    }) {
+                        println!("test");
+                        return Some(Box::new(Call{
+                            start: primary.start(),
+                            len: token.start + token.text.len() - primary.start(),
+                            callee: primary,
+                            args
+                        }))
+                    } else {
+                        self.lexer.next_if(|token| {
+                            match token.kind {
+                                TokenType::Comma => true,
+                                _ => false
+                            }
+                        });
+                        if let Some(arg) = self.expression() {
+                            if let Some(comma) = self.lexer.peek_if(|token| {
+                                match token.kind {
+                                    TokenType::Comma
+                                    | TokenType::RightParen => true,
+                                    _ => false
+                                }
+                            }) {
+                                args.push(arg);
+                            } else {
+                                return None;
+                            }
+                        } else {
+                            return None;
+                        }
+                    }
+                }
+            } else {
+                Some(primary)
+            }
+        } else {
+            None
+        }
     }
 
     fn primary(&mut self) -> Option<Box<dyn Expr>>
