@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::mem::swap;
 
 use super::{
+    Backtrace,
     Errors,
     Parser,
     LoxValue
@@ -32,9 +33,7 @@ impl VM
                 Ok(()) => {},
                 Err(err) =>
                 {
-                    let (msg, pos) = err;
-                    let (start, len) = pos;
-                    Self::print_error(code, "Runtime", msg, start, len);
+                    Self::print_backtrace(code, "Runtime", err);
                 }
             }
         }
@@ -99,6 +98,53 @@ impl VM
         {
             println!("{}", format!("{:>1$}", "here __/", start + line_prefix.len()));
         }
+    }
+
+    fn print_backtrace(code: &str, sev: &str, backtrace: Backtrace)
+    {
+        let msg = backtrace.get_error();
+        println!("{sev}: {msg}");
+        println!("Backtrace: ");
+        backtrace.iter().for_each(|site| {
+            let (start, len) = *site;
+            let mut index = 0;
+            let mut line = 1;
+            let mut line_start = 0;
+            let mut line_next = 0;
+            loop
+            {
+                if let Some(needle) = code[index..]
+                    .find('\n').map(|i| i + index)
+                {
+                    if index > start { break }
+                    line_start = line_next;
+                    line_next = needle + 1;
+                    index = line_next;
+                    line += 1;
+                }
+                else
+                {
+                    line_start = line_next;
+                    line_next = code.len() + 1;
+                    break;
+                }
+            }
+            let line_prefix = format!("line {line}: ");
+            println!("{line_prefix}{}", &code[line_start .. line_next - 1]);
+            if len != 0
+            {
+                println!("{}{}", format!("{:>1$}", "here --", start + line_prefix.len()),
+                    format!("{:^<1$}", "", len));
+            }
+            else if start < (line_start + line_next - 1) / 2
+            {
+                println!("{}\\__ here", format!("{:>1$}", "", start + line_prefix.len()));
+            }
+            else
+            {
+                println!("{}", format!("{:>1$}", "here __/", start + line_prefix.len()));
+            }
+        })
     }
 }
 

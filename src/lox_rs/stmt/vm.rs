@@ -6,9 +6,9 @@ use super::{
     }
 };
 
-impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
+impl Visitor<Result<(), Backtrace>> for VM
 {
-    fn visit_blockstmt(&mut self, block: &BlockStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_blockstmt(&mut self, block: &BlockStmt) -> Result<(), Backtrace>
     {
         self.new_scope();
         for stmt in &block.stmts
@@ -27,7 +27,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         return Ok(());
     }
 
-    fn visit_exprstmt(&mut self, stmt: &ExprStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_exprstmt(&mut self, stmt: &ExprStmt) -> Result<(), Backtrace>
     {
         match stmt.expr.run(self)
         {
@@ -36,7 +36,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_ifstmt(&mut self, stmt: &IfStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_ifstmt(&mut self, stmt: &IfStmt) -> Result<(), Backtrace>
     {
         match stmt.expr.run(self)
         {
@@ -55,7 +55,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_printstmt(&mut self, stmt: &PrintStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_printstmt(&mut self, stmt: &PrintStmt) -> Result<(), Backtrace>
     {
         match stmt.expr.run(self)
         {
@@ -64,7 +64,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_varstmt(&mut self, stmt: &VarStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_varstmt(&mut self, stmt: &VarStmt) -> Result<(), Backtrace>
     {
         if let Some(expr) = &stmt.expr
         {
@@ -85,7 +85,7 @@ impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_whilestmt(&mut self, stmt: &WhileStmt) -> Result<(), (&'static str, (usize, usize))>
+    fn visit_whilestmt(&mut self, stmt: &WhileStmt) -> Result<(), Backtrace>
     {
         loop
         {

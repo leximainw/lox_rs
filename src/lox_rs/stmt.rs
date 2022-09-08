@@ -2,8 +2,8 @@ pub mod vm;
 
 use super::expr::Expr;
 
-// impl Visitor<Result<(), (&'static str, (usize, usize))>> for VM: run;
-use super::VM;
+// impl Visitor<Result<(), Backtrace>> for VM: run;
+use super::{Backtrace, VM};
 
 // trait: Stmt;
 // attr start: usize;
@@ -25,7 +25,7 @@ pub trait Stmt
 	fn len(&self) -> usize;
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt>;
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>;
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>;
 }
 
 trait Visitor<I>
@@ -51,7 +51,7 @@ impl Stmt for BlockStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_blockstmt(self) }
 }
 
@@ -68,7 +68,7 @@ impl Stmt for ExprStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { Some(*self) }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_exprstmt(self) }
 }
 
@@ -87,7 +87,7 @@ impl Stmt for IfStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_ifstmt(self) }
 }
 
@@ -104,7 +104,7 @@ impl Stmt for PrintStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_printstmt(self) }
 }
 
@@ -122,7 +122,7 @@ impl Stmt for VarStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_varstmt(self) }
 }
 
@@ -140,6 +140,6 @@ impl Stmt for WhileStmt
 	fn len(&self) -> usize { self.len }
 	fn to_exprstmt(self: Box<Self>) -> Option<ExprStmt> { None }
 
-	fn run(&self, run: &mut VM) -> Result<(), (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<(), Backtrace>
 	{ run.visit_whilestmt(self) }
 }

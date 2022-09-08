@@ -1,9 +1,10 @@
 use super::super::VM;
+use super::super::Backtrace;
 use super::*;
 
-impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
+impl Visitor<Result<LoxValue, Backtrace>> for VM
 {
-    fn visit_binary(&mut self, expr: &Binary) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_binary(&mut self, expr: &Binary) -> Result<LoxValue, Backtrace>
     {
         match expr.left.run(self)
         {
@@ -54,7 +55,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                             },
                             _ =>
                             {
-                                Err(("expected number or string",
+                                Err(Backtrace::starting_at(format!("expected number or string"),
                                     (expr.left.start(), expr.left.len())))
                             }
                         }
@@ -66,33 +67,46 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                         {
                             LoxValue::Num(lnum) => if let LoxValue::Num(rnum) = rval
                             { Ok(LoxValue::Num(lnum + rnum)) }
-                            else { Err((ERR, (expr.right.start(), expr.right.len()))) },
+                            else { Err(Backtrace::starting_at(ERR.to_string(),
+                                (expr.right.start(), expr.right.len()))) },
                             LoxValue::Str(lstr) => if let LoxValue::Str(rstr) = rval
                             { Ok(LoxValue::Str(format!("{}{}", lstr, rstr))) }
-                            else { Err((ERR, (expr.right.start(), expr.right.len()))) },
-                            _ => Err((ERR, (expr.left.start(), expr.left.len())))
+                            else { Err(Backtrace::starting_at(ERR.to_string(),
+                                (expr.right.start(), expr.right.len()))) },
+                            _ =>
+                            {
+                                Err(Backtrace::starting_at(ERR.to_string(),
+                                    (expr.left.start(), expr.left.len())))
+                            }
                         }
                     },
                     TokenType::Minus | TokenType::Star
                     | TokenType::Slash | TokenType::Percent =>
                     {
-                        const ERR: &str = "expected two numbers";
                         if let LoxValue::Num(lnum) = lval
                         {
                             if let LoxValue::Num(rnum) = rval
                             {
-                                return match expr.oper
+                                match expr.oper
                                 {
                                     TokenType::Minus => Ok(LoxValue::Num(lnum - rnum)),
                                     TokenType::Star => Ok(LoxValue::Num(lnum * rnum)),
                                     TokenType::Slash => Ok(LoxValue::Num(lnum / rnum)),
                                     TokenType::Percent => Ok(LoxValue::Num(lnum - (lnum / rnum).floor() * rnum)),
                                     _ => panic!()
-                                };
+                                }
                             }
-                            else { Err((ERR, (expr.right.start(), expr.right.len()))) }
+                            else
+                            {
+                                Err(Backtrace::starting_at(format!("expected two numbers"),
+                                    (expr.right.start(), expr.right.len())))
+                            }
                         }
-                        else { Err((ERR, (expr.left.start(), expr.left.len()))) }
+                        else
+                        {
+                            Err(Backtrace::starting_at(format!("expected two numbers"),
+                                (expr.left.start(), expr.left.len())))
+                        }
                     },
                     _ => panic!()
                 },
@@ -102,7 +116,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_call(&mut self, expr: &Call) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_call(&mut self, expr: &Call) -> Result<LoxValue, Backtrace>
     {
         let value = expr.callee.run(self);
         if let Ok(LoxValue::Fn(mut callee)) = value {
@@ -111,16 +125,16 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 Err(err) => Err(err)
             }
         } else {
-            Err(("", (expr.callee.start(), expr.callee.len())))
+            Err(Backtrace::starting_at(format!("expected callable"), (expr.callee.start(), expr.callee.len())))
         }
     }
 
-    fn visit_grouping(&mut self, expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_grouping(&mut self, expr: &Grouping) -> Result<LoxValue, Backtrace>
     {
         expr.expr.run(self)
     }
 
-    fn visit_literal(&mut self, expr: &Literal) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_literal(&mut self, expr: &Literal) -> Result<LoxValue, Backtrace>
     {
         match &expr.value
         {
@@ -132,7 +146,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_logical(&mut self, expr: &Logical) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_logical(&mut self, expr: &Logical) -> Result<LoxValue, Backtrace>
     {
         match expr.left.run(self)
         {
@@ -155,7 +169,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_unary(&mut self, expr: &Unary) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_unary(&mut self, expr: &Unary) -> Result<LoxValue, Backtrace>
     {
         match expr.oper
         {
@@ -172,7 +186,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                     {
                         Ok(LoxValue::Num(-num))
                     }
-                    else { Err(("expected number",
+                    else { Err(Backtrace::starting_at(format!("expected number"),
                         (expr.expr.start(), expr.expr.len()))) },
                     Err(err) => Err(err)
                 }
@@ -181,7 +195,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
         }
     }
 
-    fn visit_varget(&mut self, expr: &VarGet) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_varget(&mut self, expr: &VarGet) -> Result<LoxValue, Backtrace>
     {
         if let Some(value) = self.curr_scope.get(&expr.name)
         {
@@ -194,11 +208,11 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 LoxValue::Nil => Ok(LoxValue::Nil)
             }
         }
-        else { Err(("undefined variable",
+        else { Err(Backtrace::starting_at(format!("undefined variable"),
             (expr.start(), expr.len()))) }
     }
 
-    fn visit_varset(&mut self, expr: &VarSet) -> Result<LoxValue, (&'static str, (usize, usize))>
+    fn visit_varset(&mut self, expr: &VarSet) -> Result<LoxValue, Backtrace>
     {
         match expr.expr.run(self)
         {
@@ -215,7 +229,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 {
                     Ok(value)
                 }
-                else { Err(("undefined variable",
+                else { Err(Backtrace::starting_at(format!("undefined variable"),
                     (expr.start(), expr.len()))) }
             }
             Err(err) => Err(err)

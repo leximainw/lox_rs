@@ -1,3 +1,4 @@
+pub mod backtrace;
 pub mod closure;
 pub mod errors;
 pub mod vm;
@@ -8,6 +9,7 @@ mod npeekable;
 mod parser;
 pub use self::vm::VM as VM;
 pub use self::closure::LoxClosure as LoxClosure;
+pub use self::backtrace::Backtrace as Backtrace;
 pub use self::errors::Errors as Errors;
 pub use self::lexer::Lexer as Lexer;
 pub use self::parser::Parser as Parser;

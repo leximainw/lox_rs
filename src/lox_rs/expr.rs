@@ -2,6 +2,7 @@ pub mod vm;
 pub mod printer;
 
 use super::{
+	Backtrace,
     LoxValue,
     TokenType
 };
@@ -9,7 +10,7 @@ use super::{
 // impl Visitor<String> for AstPrinter: print;
 use printer::AstPrinter;
 
-// impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM: run;
+// impl Visitor<Result<LoxValue, Backtrace>> for VM: run;
 use super::VM;
 
 // trait: Expr;
@@ -35,7 +36,7 @@ pub trait Expr
 	fn as_varget(&self) -> Option<&VarGet>;
 
 	fn print(&self, print: &mut AstPrinter) -> String;
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>;
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>;
 }
 
 trait Visitor<I>
@@ -67,7 +68,7 @@ impl Expr for Binary
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_binary(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_binary(self) }
 }
 
@@ -87,7 +88,7 @@ impl Expr for Call
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_call(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_call(self) }
 }
 
@@ -106,7 +107,7 @@ impl Expr for Grouping
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_grouping(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_grouping(self) }
 }
 
@@ -125,7 +126,7 @@ impl Expr for Literal
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_literal(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_literal(self) }
 }
 
@@ -146,7 +147,7 @@ impl Expr for Logical
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_logical(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_logical(self) }
 }
 
@@ -166,7 +167,7 @@ impl Expr for Unary
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_unary(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_unary(self) }
 }
 
@@ -185,7 +186,7 @@ impl Expr for VarGet
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_varget(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_varget(self) }
 }
 
@@ -205,6 +206,6 @@ impl Expr for VarSet
 
 	fn print(&self, print: &mut AstPrinter) -> String
 	{ print.visit_varset(self) }
-	fn run(&self, run: &mut VM) -> Result<LoxValue, (&'static str, (usize, usize))>
+	fn run(&self, run: &mut VM) -> Result<LoxValue, Backtrace>
 	{ run.visit_varset(self) }
 }

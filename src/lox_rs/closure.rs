@@ -1,4 +1,4 @@
-use super::LoxValue;
+use super::{Backtrace, LoxValue};
 
 #[derive(Debug)]
 #[derive(PartialEq)]
@@ -10,7 +10,7 @@ pub struct LoxClosure
 
 impl LoxClosure
 {
-    pub fn call(&mut self, args: Vec<LoxValue>) -> Result<LoxValue, (&'static str, (usize, usize))>
+    pub fn call(&mut self, args: Vec<LoxValue>) -> Result<LoxValue, Backtrace>
     {
         todo!();
     }
