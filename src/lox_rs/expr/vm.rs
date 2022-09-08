@@ -104,7 +104,15 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
 
     fn visit_call(&mut self, expr: &Call) -> Result<LoxValue, (&'static str, (usize, usize))>
     {
-        todo!();
+        let value = expr.callee.run(self);
+        if let Ok(LoxValue::Fn(mut callee)) = value {
+            match expr.args.iter().map(|arg| arg.run(self)).collect() {
+                Ok(args) => callee.call(args),
+                Err(err) => Err(err)
+            }
+        } else {
+            Err(("", (expr.callee.start(), expr.callee.len())))
+        }
     }
 
     fn visit_grouping(&mut self, expr: &Grouping) -> Result<LoxValue, (&'static str, (usize, usize))>
@@ -119,6 +127,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
             LoxValue::Bool(value) => Ok(LoxValue::Bool(*value)),
             LoxValue::Num(value) => Ok(LoxValue::Num(*value)),
             LoxValue::Str(value) => Ok(LoxValue::Str(value.to_string())),
+            LoxValue::Fn(value) => Ok(LoxValue::Fn(*value)),
             LoxValue::Nil => Ok(LoxValue::Nil)
         }
     }
@@ -181,6 +190,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                 LoxValue::Bool(value) => Ok(LoxValue::Bool(*value)),
                 LoxValue::Num(value) => Ok(LoxValue::Num(*value)),
                 LoxValue::Str(value) => Ok(LoxValue::Str(value.to_string())),
+                LoxValue::Fn(value) => Ok(LoxValue::Fn(*value)),
                 LoxValue::Nil => Ok(LoxValue::Nil)
             }
         }
@@ -199,6 +209,7 @@ impl Visitor<Result<LoxValue, (&'static str, (usize, usize))>> for VM
                     LoxValue::Bool(value) => LoxValue::Bool(value),
                     LoxValue::Num(value) => LoxValue::Num(value),
                     LoxValue::Str(ref value) => LoxValue::Str(value.to_string()),
+                    LoxValue::Fn(value) => LoxValue::Fn(value),
                     LoxValue::Nil => LoxValue::Nil
                 })
                 {
