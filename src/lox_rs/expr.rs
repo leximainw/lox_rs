@@ -1,11 +1,7 @@
-pub mod vm;
 pub mod printer;
+pub mod vm;
 
-use super::{
-    Backtrace,
-    LoxValue,
-    TokenType
-};
+use super::{Backtrace, LoxValue, TokenType};
 
 // impl Visitor<String> for AstPrinter: print;
 use printer::AstPrinter;
