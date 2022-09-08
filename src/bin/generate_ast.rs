@@ -4,6 +4,8 @@ use std::{
     str
 };
 
+const TAB_SIZE: usize = 4;
+
 fn main()
 {
     env::args().skip(1).for_each(|arg| {
@@ -279,5 +281,5 @@ fn generate_ast(mut slice: &str) -> String
             .replace("TYPE", kind));
     });
 
-    text
+    text.replace("\t", &" ".repeat(TAB_SIZE))
 }
