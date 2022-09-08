@@ -1,5 +1,10 @@
 #!/bin/zsh
 
+# format source code
+rustfmt ./src/bin/eof_newline.rs
+rustfmt ./src/bin/generate_ast.rs
+rustfmt ./src/main.rs
+
 # rebuild autogenerators
 cargo build
 
