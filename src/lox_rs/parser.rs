@@ -789,7 +789,6 @@ impl Parser<'_>
                 }
             }) {
                 let mut args = Vec::new();
-                println!("{}", self.lexer.peek().unwrap().text);
                 loop {
                     if let Some(token) = self.lexer.next_if(|token| {
                         match token.kind {
@@ -797,7 +796,6 @@ impl Parser<'_>
                             _ => false
                         }
                     }) {
-                        println!("test");
                         return Some(Box::new(Call{
                             start: primary.start(),
                             len: token.start + token.text.len() - primary.start(),
